@@ -1,0 +1,691 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="color-scheme" content="light" />
+  <meta name="theme-color" content="#ffffff" />
+  <title>Attendance Calculator - Bunk or Attend?</title>
+  <meta name="description" content="Attendance percentage calculator for college. See how many classes you can skip, or how many you must attend, to keep 60-90% attendance by classes held so far o" />
+  <link rel="canonical" href="https://studykoro.me/tools/attendance-calculator/" />
+  <meta name="robots" content="index, follow" />
+  <meta property="og:site_name" content="Study Koro" />
+  <meta property="og:locale" content="en_US" />
+  <meta property="og:type" content="website" />
+  <meta property="og:title" content="Attendance Calculator - Bunk or Attend?" />
+  <meta property="og:description" content="Attendance percentage calculator for college. See how many classes you can skip, or how many you must attend, to keep 60-90% attendance by classes held so far o" />
+  <meta property="og:url" content="https://studykoro.me/tools/attendance-calculator/" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="Attendance Calculator - Bunk or Attend?" />
+  <meta name="twitter:description" content="Attendance percentage calculator for college. See how many classes you can skip, or how many you must attend, to keep 60-90% attendance by classes held so far o" />
+  <link rel="alternate" type="application/rss+xml" title="Study Koro RSS Feed" href="/feed.xml" />
+  <link rel="icon" type="image/png" href="/media/favicon.png" />
+  <link rel="apple-touch-icon" href="/media/favicon.png" />
+  <link rel="preload" as="style" href="/assets/style.css" />
+  <link rel="stylesheet" href="/assets/style.css" />
+  <style>
+.card {
+  margin-top: 1.75rem;
+  background: #ffffff;
+  border: 1px solid #e6e6e6;
+  border-radius: 10px;
+  padding: 1.25rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.9rem;
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.field label,
+.field-label {
+  font-size: 0.85rem;
+  color: #6b6b6b;
+  font-weight: 600;
+}
+
+.mode-fields {
+  display: flex;
+  flex-direction: column;
+  gap: 0.9rem;
+}
+
+.mode-fields[hidden] {
+  display: none;
+}
+
+.mode-switch {
+  display: flex;
+  border: 1px solid #e6e6e6;
+  border-radius: 6px;
+  overflow: hidden;
+}
+
+.mode-option {
+  flex: 1;
+  position: relative;
+}
+
+.mode-option:first-child span {
+  border-right: 1px solid #e6e6e6;
+}
+
+.mode-option input {
+  position: absolute;
+  inset: 0;
+  margin: 0;
+  opacity: 0;
+  cursor: pointer;
+}
+
+.mode-option span {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 40px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: #6b6b6b;
+  transition: background-color 0.2s ease, color 0.2s ease;
+}
+
+.mode-option input:checked + span {
+  background: #111111;
+  color: #fff;
+}
+
+.mode-option input:focus-visible + span {
+  box-shadow: inset 0 0 0 2px rgba(17, 17, 17, 0.35);
+}
+
+.field input,
+.field select {
+  height: 44px;
+  width: 100%;
+  padding: 0 0.75rem;
+  font: inherit;
+  font-size: 1rem;
+  color: #111111;
+  background: #ffffff;
+  border: 1px solid #e6e6e6;
+  border-radius: 6px;
+  outline: none;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.field input:focus,
+.field select:focus,
+.bttn:focus-visible {
+  border-color: #111111;
+  box-shadow: 0 0 0 3px rgba(17, 17, 17, 0.08);
+}
+
+.bttn {
+  height: 44px;
+  margin-top: 0.25rem;
+  font: inherit;
+  font-weight: 600;
+  color: #fff;
+  background: #111111;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: opacity 0.2s ease;
+width: stretch;
+}
+
+.bttn:hover {
+  opacity: 0.88;
+}
+
+.output {
+  display: block;
+  margin-top: 1.25rem;
+  font-size: 0.95rem;
+  line-height: 1.6;
+  color: #6b6b6b;
+  text-align: center;
+}
+
+.output:empty {
+  display: none;
+}
+
+.headline {
+  display: block;
+  font-size: 1.05rem;
+  font-weight: 800;
+  color: #111111;
+  margin-bottom: 0.5rem;
+}
+
+.headline.good {
+  color: #10794f;
+}
+
+.headline.warn {
+  color: #a4451a;
+}
+
+.error {
+  color: #a4451a;
+  font-weight: 600;
+}
+
+strong {
+  color: #111111;
+  font-weight: 700;
+}
+  </style>
+</head>
+<body>
+<div class="gp-page-wrap">
+
+  <header class="gp-header">
+    <div class="gp-container gp-header-inner">
+      <div class="gp-site-brand">
+        <a href="/" class="gp-site-title">Study Koro</a>
+      </div>
+
+      <div class="gp-header-right">
+        <nav aria-label="Primary" class="gp-desktop-nav">
+        <a href="/" class="gp-nav-link">Home</a>
+        <div class="gp-nav-item">
+          <button class="gp-nav-link is-active" aria-haspopup="true" aria-expanded="false">
+            Tools <span class="gp-nav-caret" aria-hidden="true">&#9660;</span>
+          </button>
+          <div class="gp-dropdown-menu" role="menu">
+            <a href="/tools/ssc-gpa-calculator/" class="gp-dropdown-item" role="menuitem">SSC GPA Calculator</a>
+            <a href="/tools/hsc-gpa-calculator/" class="gp-dropdown-item" role="menuitem">HSC GPA Calculator</a>
+            <a href="/tools/cgpa-calculator/" class="gp-dropdown-item" role="menuitem">CGPA Calculator</a>
+            <a href="/tools/ielts-band-score-calculator/" class="gp-dropdown-item" role="menuitem">IELTS Band Score Calculator</a>
+            <a href="/tools/attendance-calculator/" class="gp-dropdown-item is-active" role="menuitem">Attendance Calculator</a>
+          </div>
+        </div>
+        <a href="/posts/" class="gp-nav-link">Blog</a>
+        <a href="/about/" class="gp-nav-link">About</a>
+        <a href="/contact/" class="gp-nav-link">Contact</a>
+        </nav>
+
+        <button id="header-search-toggle" class="gp-header-search-toggle" aria-label="Open search" aria-expanded="false" aria-controls="header-search">
+          <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+        </button>
+
+        <button id="mobile-toggle" class="gp-mobile-toggle" aria-label="Open menu" aria-expanded="false" aria-controls="mobile-nav">
+          <svg class="icon-menu" xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg><svg class="icon-close" xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="display:none"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+        </button>
+      </div>
+    </div>
+
+    <div id="header-search" class="gp-header-search" hidden>
+      <form class="gp-search-form gp-container" role="search" aria-label="Site search" action="/search/" method="get">
+        <label for="header-search-input" class="sr-only">Search</label>
+        <input id="header-search-input" type="search" name="q" class="gp-search-input" placeholder="Search …" />
+      </form>
+    </div>
+
+    <nav id="mobile-nav" class="gp-mobile-nav" style="display:none" aria-label="Mobile">
+      <a href="/" class="gp-mobile-nav-link">Home</a>
+      <div class="gp-mobile-nav-group">
+        <button type="button" class="gp-mobile-nav-parent" aria-expanded="false" aria-controls="mobile-submenu-1">
+          <span class="gp-mobile-nav-parent-label">Tools</span>
+          <span class="gp-mobile-nav-caret" aria-hidden="true">&#9660;</span>
+        </button>
+        <div id="mobile-submenu-1" class="gp-mobile-nav-children" hidden>
+          <a href="/tools/ssc-gpa-calculator/" class="gp-mobile-nav-child">SSC GPA Calculator</a>
+          <a href="/tools/hsc-gpa-calculator/" class="gp-mobile-nav-child">HSC GPA Calculator</a>
+          <a href="/tools/cgpa-calculator/" class="gp-mobile-nav-child">CGPA Calculator</a>
+          <a href="/tools/ielts-band-score-calculator/" class="gp-mobile-nav-child">IELTS Band Score Calculator</a>
+          <a href="/tools/attendance-calculator/" class="gp-mobile-nav-child">Attendance Calculator</a>
+        </div>
+      </div>
+      <a href="/posts/" class="gp-mobile-nav-link">Blog</a>
+      <a href="/about/" class="gp-mobile-nav-link">About</a>
+      <a href="/contact/" class="gp-mobile-nav-link">Contact</a>
+    </nav>
+  </header>
+
+  <main class="gp-main">
+    <div class="gp-container gp-content-row">
+      <div class="gp-primary">
+        <nav class="gp-breadcrumbs" aria-label="Breadcrumb">
+          <a href="/">Home</a>
+          <span class="gp-breadcrumb-sep" aria-hidden="true">&rsaquo;</span>
+          <a href="/tools/">Free Study Tools</a>
+          <span class="gp-breadcrumb-sep" aria-hidden="true">&rsaquo;</span>
+          <span aria-current="page">Attendance Calculator</span>
+        </nav>
+        <article class="gp-post-card">
+          <header class="gp-single-header">
+            <h1 class="gp-single-title">Attendance Calculator</h1>
+          </header>
+          <div class="gp-post-content">
+<p>Find out how many classes you can skip while maintaining your target attendance percentage, or how many classes you need to attend to reach your target percentage.</p>
+<form class="card" id="form" novalidate>
+<div class="field">
+<span class="field-label" id="mode-label">Mode</span>
+<div class="mode-switch" role="radiogroup" aria-labelledby="mode-label">
+<label class="mode-option">
+<input type="radio" name="mode" value="held" id="mode-held" checked />
+<span>Classes held so far</span>
+</label>
+<label class="mode-option">
+<input type="radio" name="mode" value="term" id="mode-term" />
+<span>Full term</span>
+</label>
+</div>
+</div>
+
+<div class="field">
+<label for="target">Percentage required</label>
+<select id="target" name="target">
+<option value="60">60%</option>
+<option value="65">65%</option>
+<option value="70">70%</option>
+<option value="75" selected>75%</option>
+<option value="80">80%</option>
+<option value="85">85%</option>
+<option value="90">90%</option>
+</select>
+</div>
+
+<div class="mode-fields" id="fields-held">
+<div class="field">
+<label for="present">Classes attended</label>
+<input id="present" name="present" type="number" min="0" step="1" inputmode="numeric" autocomplete="off" />
+</div>
+
+<div class="field">
+<label for="total">Classes held so far</label>
+<input id="total" name="total" type="number" min="1" step="1" inputmode="numeric" autocomplete="off" />
+</div>
+</div>
+
+<div class="mode-fields" id="fields-term" hidden>
+<div class="field">
+<label for="term">Total classes this term</label>
+<input id="term" name="term" type="number" min="1" step="1" inputmode="numeric" autocomplete="off" />
+</div>
+
+<div class="field">
+<label for="held">Classes held so far</label>
+<input id="held" name="held" type="number" min="0" step="1" inputmode="numeric" autocomplete="off" />
+</div>
+
+<div class="field">
+<label for="attended">Classes attended so far</label>
+<input id="attended" name="attended" type="number" min="0" step="1" inputmode="numeric" autocomplete="off" />
+</div>
+</div>
+
+<p><button type="submit" class="bttn">Calculate</button></p>
+</form>
+
+<p><output id="output" class="output" role="status" aria-live="polite"></output></p>
+<h2>How to use it</h2>
+<ol>
+<li><p>Pick a mode. &quot;Classes held so far&quot; is for tracking what&#39;s happened up to today. &quot;Full term&quot; is for when you already know how many classes the whole course runs for.</p>
+</li>
+<li><p>Set your target percentage. Most universities set this at 75%, but the dropdown covers 60% to 90%.</p>
+</li>
+<li><p>Fill in your numbers and hit Calculate. After that, the result updates automatically as you edit any field.</p>
+</li>
+</ol>
+
+          </div>
+        </article>
+      </div>
+    <aside class="gp-sidebar" aria-label="Sidebar">
+      <div class="gp-widget">
+        <h2 class="gp-widget-title"><span>Recent Posts</span></h2>
+        <ul class="gp-recent-list">
+          <li class="gp-recent-item">
+            <a class="gp-recent-thumb" href="/posts/application-letter-formats-bangladeshi-students/"><span class="gp-media-tile" style="background:#0f9b8e" aria-hidden="true">AL</span></a>
+            <a class="gp-recent-link" href="/posts/application-letter-formats-bangladeshi-students/">Application Letter Formats Every Bangladeshi Student Should Know</a>
+          </li>
+          <li class="gp-recent-item">
+            <a class="gp-recent-thumb" href="/posts/common-grammar-mistakes-bangladeshi-students/"><span class="gp-media-tile" style="background:#e8542f" aria-hidden="true">1C</span></a>
+            <a class="gp-recent-link" href="/posts/common-grammar-mistakes-bangladeshi-students/">15 Common Grammar Mistakes Bangladeshi Students Make in English</a>
+          </li>
+          <li class="gp-recent-item">
+            <a class="gp-recent-thumb" href="/posts/ielts-speaking-topics-model-answers/"><span class="gp-media-tile" style="background:#c2185b" aria-hidden="true">IS</span></a>
+            <a class="gp-recent-link" href="/posts/ielts-speaking-topics-model-answers/">IELTS Speaking — Topics and Model Answers for All 3 Parts</a>
+          </li>
+          <li class="gp-recent-item">
+            <a class="gp-recent-thumb" href="/posts/ielts-writing-task-2-band-7/"><span class="gp-media-tile" style="background:#c2185b" aria-hidden="true">IW</span></a>
+            <a class="gp-recent-link" href="/posts/ielts-writing-task-2-band-7/">IELTS Writing Task 2 — Band 7+ Structure with Sample</a>
+          </li>
+          <li class="gp-recent-item">
+            <a class="gp-recent-thumb" href="/posts/how-to-improve-cgpa-in-one-semester/"><span class="gp-media-tile" style="background:#e8542f" aria-hidden="true">HT</span></a>
+            <a class="gp-recent-link" href="/posts/how-to-improve-cgpa-in-one-semester/">How to Improve Your CGPA in 1 Semester — A Realistic Plan</a>
+          </li>
+        </ul>
+      </div>
+
+      <div class="gp-widget">
+        <h2 class="gp-widget-title"><span>Archives</span></h2>
+        <ul>
+          <li><a href="/archive/2026/04/">April 2026</a></li>
+          <li><a href="/archive/2026/03/">March 2026</a></li>
+        </ul>
+      </div>
+
+      <div class="gp-widget">
+        <h2 class="gp-widget-title"><span>Categories</span></h2>
+        <ul>
+          <li><a href="/category/writing/">Writing (2)</a></li>
+          <li><a href="/category/ielts/">IELTS (4)</a></li>
+          <li><a href="/category/academic/">Academic (3)</a></li>
+          <li><a href="/category/study-abroad/">Study Abroad (4)</a></li>
+        </ul>
+      </div>
+    </aside>
+    </div>
+  </main>
+
+  <footer class="gp-footer">
+    <div class="gp-container">
+      <div class="gp-footer-text">&copy; Study Koro. All rights reserved.</div>
+      <nav class="gp-footer-links" aria-label="Footer">
+        <a href="/about/">About</a>
+        <a href="/contact/">Contact</a>
+        <a href="/privacy-policy/">Privacy Policy</a>
+        <a href="/terms/">Terms of Use</a>
+        <a href="/disclaimer/">Disclaimer</a>
+      </nav>
+    </div>
+  </footer>
+
+</div>
+<script src="/assets/script.js" defer></script>
+<script>
+"use strict";
+
+const form = document.getElementById("form");
+const targetSelect = document.getElementById("target");
+const output = document.getElementById("output");
+
+const modeRadios = Array.from(document.querySelectorAll('input[name="mode"]'));
+const fieldsHeld = document.getElementById("fields-held");
+const fieldsTerm = document.getElementById("fields-term");
+
+// Mode A — "classes held so far". Total grows by one for every class that
+// happens, whether or not you attend it.
+const presentInput = document.getElementById("present");
+const totalInput = document.getElementById("total");
+
+// Mode B — "full term". The term size is fixed; only how many of the
+// remaining classes you attend is in play.
+const termInput = document.getElementById("term");
+const heldInput = document.getElementById("held");
+const attendedInput = document.getElementById("attended");
+
+const MODE_STORAGE_KEY = "attendance-calc:mode";
+const VALID_MODES = ["held", "term"];
+
+/** Strict whole-number parse: rejects "", "12.5", "12abc", "-3". */
+function parseCount(raw) {
+  const value = String(raw).trim();
+  if (!/^\d+$/.test(value)) return null;
+  const n = Number(value);
+  return Number.isSafeInteger(n) ? n : null;
+}
+
+/** Ceiling division for non-negative integers, exact (no float rounding). */
+function ceilDiv(a, b) {
+  return Math.floor((a + b - 1) / b);
+}
+
+function pct(present, total) {
+  return total === 0 ? 0 : (present / total) * 100;
+}
+
+function fmt(value) {
+  return `${pct(value.present, value.total).toFixed(2)}%`;
+}
+
+function el(tag, className, text) {
+  const node = document.createElement(tag);
+  if (className) node.className = className;
+  if (text !== undefined) node.textContent = text;
+  return node;
+}
+
+function line(label, present, total) {
+  const p = el("div");
+  p.append(
+    `${label}: `,
+    el("strong", null, `${present}/${total}`),
+    " \u2192 ",
+    el("strong", null, fmt({ present, total })),
+  );
+  return p;
+}
+
+function render(nodes) {
+  output.replaceChildren(...nodes);
+}
+
+function showError(message) {
+  render([el("div", "error", message)]);
+}
+
+function classWord(n) {
+  return n === 1 ? "class" : "classes";
+}
+
+// ---------------------------------------------------------------------------
+// Mode A — classes held so far (skipping/attending changes the total too)
+// ---------------------------------------------------------------------------
+
+/** Max classes skippable while staying at/above target: 100*present >= target*(total+b). */
+function skippableClasses(present, total, target) {
+  return Math.max(0, Math.floor((100 * present - target * total) / target));
+}
+
+/** Min classes to attend in a row to reach target: 100*(present+x) >= target*(total+x). */
+function classesNeeded(present, total, target) {
+  return Math.max(0, Math.ceil((target * total - 100 * present) / (100 - target)));
+}
+
+function validateHeld(present, total) {
+  if (present === null) return "Enter the classes attended as a whole number.";
+  if (total === null) return "Enter the classes held so far as a whole number.";
+  if (total <= 0) return "Classes held so far must be greater than 0.";
+  if (present > total) return "Classes attended cannot be more than classes held.";
+  return null;
+}
+
+function calculateHeld() {
+  const present = parseCount(presentInput.value);
+  const total = parseCount(totalInput.value);
+  const target = Number(targetSelect.value);
+
+  const error = validateHeld(present, total);
+  if (error) {
+    showError(error);
+    return;
+  }
+
+  // Integer comparison avoids floating-point issues right at the boundary.
+  if (100 * present >= target * total) {
+    const skippable = skippableClasses(present, total, target);
+    const headline =
+      skippable === 0
+        ? `You're at ${target}% — you can't skip any class yet.`
+        : `You can skip ${skippable} more ${classWord(skippable)}.`;
+
+    render([
+      el("span", "headline good", headline),
+      line("Current attendance", present, total),
+      line("Attendance after skipping", present, total + skippable),
+    ]);
+    return;
+  }
+
+  const needed = classesNeeded(present, total, target);
+  render([
+    el("span", "headline warn", `Attend ${needed} more ${classWord(needed)} in a row to reach ${target}%.`),
+    line("Current attendance", present, total),
+    line("Attendance after attending", present + needed, total + needed),
+  ]);
+}
+
+// ---------------------------------------------------------------------------
+// Mode B — full term (the term size is fixed; only remaining classes flex)
+// ---------------------------------------------------------------------------
+
+function validateTerm(term, held, attended) {
+  if (term === null) return "Enter the total classes for the term as a whole number.";
+  if (held === null) return "Enter the classes held so far as a whole number.";
+  if (attended === null) return "Enter the classes attended so far as a whole number.";
+  if (term <= 0) return "Total classes for the term must be greater than 0.";
+  if (held > term) return "Classes held so far cannot be more than the term total.";
+  if (attended > held) return "Classes attended cannot be more than classes held.";
+  return null;
+}
+
+function calculateTerm() {
+  const term = parseCount(termInput.value);
+  const held = parseCount(heldInput.value);
+  const attended = parseCount(attendedInput.value);
+  const target = Number(targetSelect.value);
+
+  const error = validateTerm(term, held, attended);
+  if (error) {
+    showError(error);
+    return;
+  }
+
+  // Minimum classes attended, out of the whole term, needed to clear target%.
+  const required = ceilDiv(target * term, 100);
+  const needed = required - attended;
+  const remaining = term - held;
+
+  if (needed <= 0) {
+    // Already banked enough that even missing every remaining class still
+    // clears target% by the end of term (the term size can't grow, so this
+    // is exact, not an estimate).
+    const headline =
+      remaining === 0
+        ? `You've already secured ${target}%+ for the term.`
+        : `You've already secured ${target}%+ — you can skip all ${remaining} remaining ${classWord(remaining)}.`;
+
+    render([
+      el("span", "headline good", headline),
+      line("Current attendance", attended, held),
+      line("End-of-term attendance", attended, term),
+    ]);
+    return;
+  }
+
+  if (needed > remaining) {
+    // Not enough classes left even if every one of them is attended.
+    const maxFinal = attended + remaining;
+    render([
+      el(
+        "span",
+        "headline warn",
+        `Not reachable this term: attending all ${remaining} remaining ${classWord(remaining)} only gets you to ${fmt({ present: maxFinal, total: term })}.`,
+      ),
+      line("Current attendance", attended, held),
+      line("Best possible end-of-term", maxFinal, term),
+    ]);
+    return;
+  }
+
+  const finalAttended = attended + needed;
+  render([
+    el(
+      "span",
+      "headline warn",
+      `Attend at least ${needed} of your remaining ${remaining} ${classWord(remaining)} to reach ${target}%.`,
+    ),
+    line("Current attendance", attended, held),
+    line("End-of-term attendance", finalAttended, term),
+  ]);
+}
+
+// ---------------------------------------------------------------------------
+// Mode switching + persistence (URL query param, falling back to localStorage)
+// ---------------------------------------------------------------------------
+
+function readStoredMode() {
+  try {
+    return window.localStorage.getItem(MODE_STORAGE_KEY);
+  } catch {
+    return null; // localStorage can be unavailable (private browsing, sandboxed frame)
+  }
+}
+
+function writeStoredMode(mode) {
+  try {
+    window.localStorage.setItem(MODE_STORAGE_KEY, mode);
+  } catch {
+    // Ignore — persistence is a nice-to-have, not a requirement.
+  }
+}
+
+function resolveInitialMode() {
+  const fromUrl = new URLSearchParams(window.location.search).get("mode");
+  if (VALID_MODES.includes(fromUrl)) return fromUrl;
+
+  const stored = readStoredMode();
+  if (VALID_MODES.includes(stored)) return stored;
+
+  return "held";
+}
+
+function applyMode(mode, { persist } = { persist: false }) {
+  fieldsHeld.hidden = mode !== "held";
+  fieldsTerm.hidden = mode !== "term";
+  for (const radio of modeRadios) radio.checked = radio.value === mode;
+
+  if (persist) {
+    writeStoredMode(mode);
+    const url = new URL(window.location.href);
+    url.searchParams.set("mode", mode);
+    window.history.replaceState(null, "", url);
+  }
+}
+
+function currentMode() {
+  return modeRadios.find((radio) => radio.checked)?.value ?? "held";
+}
+
+function calculate() {
+  if (currentMode() === "term") {
+    calculateTerm();
+  } else {
+    calculateHeld();
+  }
+}
+
+applyMode(resolveInitialMode(), { persist: false });
+
+for (const radio of modeRadios) {
+  radio.addEventListener("change", () => {
+    applyMode(radio.value, { persist: true });
+    render([]); // Stale results from the other mode would be misleading.
+  });
+}
+
+form.addEventListener("submit", (event) => {
+  event.preventDefault();
+  calculate();
+});
+
+// Recalculate live once a result is already on screen.
+const allInputs = [targetSelect, presentInput, totalInput, termInput, heldInput, attendedInput];
+for (const input of allInputs) {
+  input.addEventListener("input", () => {
+    if (output.childNodes.length > 0) calculate();
+  });
+}
+</script>
+</body>
+</html>
