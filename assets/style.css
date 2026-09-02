@@ -14,8 +14,8 @@
   --gp-bg-pre: #f8f8f8;
 
   /* Text */
-  --gp-text: #212121;
-  --gp-heading: #2f4468;
+  --gp-text: #494949;
+  --gp-heading: #1f1f1f;
   --gp-on-dark: #ffffff;
   --gp-on-dark-muted: #cfcfd4;
   --gp-text-secondary: #646464;
@@ -78,10 +78,12 @@ html {
 
 body {
   background-color: var(--gp-bg-body);
-  color: var(--gp-text);
-  font-family: -apple-system, system-ui, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
-  font-size: 18px;
-  line-height: 1.7;
+  color: #494949;
+  font-family: "Baloo Da 2", sans-serif;
+  font-size: 17px;
+  font-weight: 400;
+  line-height: 2;
+  letter-spacing: 0.05em;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
@@ -104,22 +106,28 @@ a:hover {
 }
 
 h1, h2, h3, h4, h5, h6 {
-  color: var(--gp-heading);
-  letter-spacing: -0.03em;
+  color: #1f1f1f;
+  font-family: "Baloo Da 2", sans-serif;
+  font-weight: 400;
+  letter-spacing: 0.05em;
   margin-bottom: var(--gp-space-lg);
-  font-weight: 700;
-  line-height: 1.18;
+  line-height: 1.4;
 }
-h1 { font-size: clamp(2.2rem, 3.5vw, 3.2rem); }
-h2 { font-size: clamp(1.8rem, 2.5vw, 2.4rem); }
-h3 { font-size: clamp(1.4rem, 2vw, 1.8rem); }
-h4 { font-size: 1.25rem; }
-h5 { font-size: 1.1rem; }
-h6 { font-size: 1rem; font-weight: 600; letter-spacing: 0; }
+h1 { font-size: 2em; }
+h2 { font-size: 1.6em; }
+h3 { font-size: 1.35em; }
+h4 { font-size: 1.15em; }
+h5 { font-size: 1em; }
+h6 { font-size: 0.9em; }
 
 p {
   margin-bottom: 1.5em;
-  font-size: 1em;
+  color: #494949;
+  font-family: "Baloo Da 2", sans-serif;
+  font-size: 17px;
+  font-weight: 400;
+  line-height: 2;
+  letter-spacing: 0.05em;
 }
 
 ul, ol, menu { list-style: none; }
@@ -472,12 +480,13 @@ table {
 }
 
 .gp-post-title {
-  letter-spacing: -0.005em;
-  color: var(--gp-heading);
-  margin-bottom: 8px;
-  font-size: 30px;
-  font-weight: 700;
-  line-height: 1.2;
+  color: #1f1f1f;
+  font-family: "Baloo Da 2", sans-serif;
+  font-size: 1.4em;
+  font-weight: inherit;
+  line-height: inherit;
+  letter-spacing: inherit;
+  margin: 0.25em 0;
 }
 .gp-post-title a {
   color: var(--gp-heading);
@@ -610,19 +619,22 @@ table {
   padding-bottom: 22px;
 }
 .gp-single-title {
-  letter-spacing: -0.03em;
-  color: var(--gp-heading);
-  margin-bottom: 8px;
-  font-size: clamp(2.1rem, 4vw, 3rem);
-  font-weight: 700;
-  line-height: 1.15;
+  color: #1f1f1f;
+  font-family: "Baloo Da 2", sans-serif;
+  font-size: 1.4em;
+  font-weight: inherit;
+  line-height: inherit;
+  letter-spacing: inherit;
+  margin: 0.25em 0;
 }
 
 /* --- Post Content --- */
 .gp-post-content {
-  color: var(--gp-text-secondary);
-  font-size: 1.0625rem;
-  line-height: 1.8;
+  color: #494949;
+  font-family: "Baloo Da 2", sans-serif;
+  font-size: 17px;
+  line-height: 2;
+  letter-spacing: 0.05em;
 }
 .gp-post-content p { margin-bottom: 1.6em; }
 .gp-post-content img { max-width: 100%; height: auto; display: block; }
@@ -635,7 +647,7 @@ table {
 .gp-post-content h6 {
   margin-top: 2em;
   margin-bottom: 0.75em;
-  letter-spacing: -0.02em;
+  letter-spacing: inherit;
 }
 .gp-post-content blockquote {
   color: var(--gp-text-muted);
