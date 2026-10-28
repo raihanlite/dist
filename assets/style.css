@@ -526,18 +526,6 @@ table {
   object-fit: cover;
   display: block;
 }
-.gp-media-tile {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 100%;
-  height: 170px;
-  color: #ffffff;
-  font-size: 34px;
-  font-weight: 700;
-  letter-spacing: 0.04em;
-}
-
 .gp-card-text {
   flex: 1 1 260px;
   min-width: 0;
@@ -573,7 +561,6 @@ table {
   max-height: 420px;
   object-fit: cover;
 }
-.gp-single-media .gp-media-tile { height: 260px; font-size: 48px; }
 
 /* --- Entry Footer --- */
 .gp-entry-footer {
@@ -863,7 +850,6 @@ table {
   display: block;
 }
 .gp-recent-thumb img { width: 66px; height: 66px; object-fit: cover; }
-.gp-recent-thumb .gp-media-tile { width: 66px; height: 66px; font-size: 20px; }
 .gp-recent-link {
   color: var(--gp-accent);
   font-size: 16px;
@@ -1162,4 +1148,3 @@ table {
     page-break-inside: avoid;
   }
 }
-
