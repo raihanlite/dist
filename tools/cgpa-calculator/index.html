@@ -49,6 +49,7 @@
 <label for="cg-grade">Grade</label>
 <select id="cg-grade"></select>
 <p><button type="button" id="cg-add">Add course</button></p>
+<p id="cg-course-msg" class="sk-msg" aria-live="polite"></p>
 <ul id="cg-courses" hidden></ul>
 <p id="cg-courses-empty">No courses added yet.</p>
 <p><strong>Previous semesters (optional)</strong></p>
@@ -60,6 +61,7 @@
 <label for="cg-sem-credit">Credits</label>
 <input type="number" id="cg-sem-credit" min="0" step="0.5" placeholder="15">
 <p><button type="button" id="cg-sem-add">Add semester</button></p>
+<p id="cg-sem-msg" class="sk-msg" aria-live="polite"></p>
 <ul id="cg-semesters" hidden></ul>
 <div id="cg-result" class="result" aria-live="polite"></div>
 <p><strong>Target CGPA planner</strong></p>
@@ -70,11 +72,12 @@
 <div id="cg-target-result"></div>
 </div>
 <script>
-(function () {
-  var root = document.getElementById('cgpa-tool');
+(() => {
+  const root = document.getElementById('cgpa-tool');
   if (!root) return;
 
-  var GRADES = [
+  // UGC Bangladesh standard 4.00 grading scale.
+  const GRADES = [
     { label: 'A+ (4.00)', value: 4 },
     { label: 'A (3.75)', value: 3.75 },
     { label: 'A- (3.50)', value: 3.5 },
@@ -87,103 +90,103 @@
     { label: 'F (0.00)', value: 0 }
   ];
 
-  var courses = [];
-  var semesters = [];
+  const courses = [];
+  const semesters = [];
 
-  var gradeEl = document.getElementById('cg-grade');
-  gradeEl.innerHTML = GRADES.map(function (g, i) {
-    return '<option value="' + g.value + '"' + (i === 0 ? ' selected' : '') + '>' + g.label + '</option>';
-  }).join('');
+  const gradeEl = document.getElementById('cg-grade');
+  gradeEl.innerHTML = GRADES.map((g, i) =>
+    `<option value="${g.value}"${i === 0 ? ' selected' : ''}>${g.label}</option>`).join('');
 
-  var nameEl = document.getElementById('cg-name');
-  var creditEl = document.getElementById('cg-credit');
-  var coursesEl = document.getElementById('cg-courses');
-  var coursesEmptyEl = document.getElementById('cg-courses-empty');
-  var semNameEl = document.getElementById('cg-sem-name');
-  var semGpaEl = document.getElementById('cg-sem-gpa');
-  var semCreditEl = document.getElementById('cg-sem-credit');
-  var semestersEl = document.getElementById('cg-semesters');
-  var resultEl = document.getElementById('cg-result');
-  var targetEl = document.getElementById('cg-target');
-  var futureEl = document.getElementById('cg-future');
-  var targetResultEl = document.getElementById('cg-target-result');
+  const nameEl = document.getElementById('cg-name');
+  const creditEl = document.getElementById('cg-credit');
+  const coursesEl = document.getElementById('cg-courses');
+  const coursesEmptyEl = document.getElementById('cg-courses-empty');
+  const courseMsgEl = document.getElementById('cg-course-msg');
+  const semNameEl = document.getElementById('cg-sem-name');
+  const semGpaEl = document.getElementById('cg-sem-gpa');
+  const semCreditEl = document.getElementById('cg-sem-credit');
+  const semestersEl = document.getElementById('cg-semesters');
+  const semMsgEl = document.getElementById('cg-sem-msg');
+  const resultEl = document.getElementById('cg-result');
+  const targetEl = document.getElementById('cg-target');
+  const futureEl = document.getElementById('cg-future');
+  const targetResultEl = document.getElementById('cg-target-result');
 
-  function esc(s) {
-    return String(s).replace(/[&<>"]/g, function (c) {
-      return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c];
-    });
-  }
+  const esc = (s) => String(s).replace(/[&<>"]/g, (c) =>
+    ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
 
   function semesterGpa() {
-    var credits = courses.reduce(function (a, c) { return a + c.credit; }, 0);
+    const credits = courses.reduce((a, c) => a + c.credit, 0);
     if (!credits) return null;
-    var points = courses.reduce(function (a, c) { return a + c.credit * c.grade; }, 0);
-    return { gpa: points / credits, credits: credits, points: points };
+    const points = courses.reduce((a, c) => a + c.credit * c.grade, 0);
+    return { gpa: points / credits, credits, points };
   }
 
   function cumulative() {
-    var current = semesterGpa();
-    var credits = semesters.reduce(function (a, s) { return a + s.credits; }, 0) + (current ? current.credits : 0);
+    const current = semesterGpa();
+    const credits = semesters.reduce((a, s) => a + s.credits, 0) + (current ? current.credits : 0);
     if (!credits) return null;
-    var points = semesters.reduce(function (a, s) { return a + s.credits * s.gpa; }, 0) + (current ? current.points : 0);
-    return { cgpa: points / credits, credits: credits, points: points };
+    const points = semesters.reduce((a, s) => a + s.credits * s.gpa, 0) + (current ? current.points : 0);
+    return { cgpa: points / credits, credits, points };
   }
 
   function renderLists() {
     coursesEl.hidden = courses.length === 0;
     coursesEmptyEl.hidden = courses.length > 0;
-    coursesEl.innerHTML = courses.map(function (c, i) {
-      var label = GRADES.filter(function (g) { return g.value === c.grade; })[0];
-      return '<li><span>' + esc(c.name) + '</span><span>' + c.credit + ' cr - ' +
-        (label ? esc(label.label) : c.grade) +
-        '</span><button type="button" class="sk-remove" data-course="' + i + '" aria-label="Remove course">&times;</button></li>';
+    coursesEl.innerHTML = courses.map((c, i) => {
+      const label = GRADES.find((g) => g.value === c.grade);
+      return `<li><span>${esc(c.name)}</span><span>${c.credit} cr - ` +
+        `${label ? esc(label.label) : c.grade}` +
+        `</span><button type="button" class="sk-remove" data-course="${i}" aria-label="Remove course">&times;</button></li>`;
     }).join('');
 
     semestersEl.hidden = semesters.length === 0;
-    semestersEl.innerHTML = semesters.map(function (s, i) {
-      return '<li><span>' + esc(s.name) + '</span><span>GPA ' + s.gpa.toFixed(2) + ' - ' + s.credits + ' cr' +
-        '</span><button type="button" class="sk-remove" data-semester="' + i + '" aria-label="Remove semester">&times;</button></li>';
-    }).join('');
+    semestersEl.innerHTML = semesters.map((s, i) =>
+      `<li><span>${esc(s.name)}</span><span>GPA ${s.gpa.toFixed(2)} - ${s.credits} cr` +
+      `</span><button type="button" class="sk-remove" data-semester="${i}" aria-label="Remove semester">&times;</button></li>`).join('');
   }
 
   function renderResult() {
-    var current = semesterGpa();
-    var cum = cumulative();
+    const current = semesterGpa();
+    const cum = cumulative();
     if (!current && !cum) { resultEl.innerHTML = ''; renderTarget(); return; }
     resultEl.innerHTML =
       '<div class="sk-result">' +
-      (current ? '<p class="sk-result-label">Semester GPA</p><p class="sk-result-value">' + current.gpa.toFixed(2) + '</p>' : '') +
-      (cum ? '<p class="sk-result-note">Cumulative CGPA: <strong>' + cum.cgpa.toFixed(2) +
-        '</strong> over ' + cum.credits + ' credits</p>' : '') +
+      (current ? `<p class="sk-result-label">Semester GPA</p><p class="sk-result-value">${current.gpa.toFixed(2)}</p>` : '') +
+      (cum ? `<p class="sk-result-note">Cumulative CGPA: <strong>${cum.cgpa.toFixed(2)}</strong> over ${cum.credits} credits</p>` : '') +
       '</div>';
     renderTarget();
   }
 
   function renderTarget() {
-    var target = parseFloat(targetEl.value);
-    var future = parseFloat(futureEl.value);
-    var cum = cumulative();
-    if (isNaN(target) || isNaN(future) || future <= 0 || !cum) { targetResultEl.innerHTML = ''; return; }
-    var needed = (target * (cum.credits + future) - cum.points) / future;
-    var message;
+    const target = parseFloat(targetEl.value);
+    const future = parseFloat(futureEl.value);
+    const cum = cumulative();
+    if (Number.isNaN(target) || Number.isNaN(future) || future <= 0 || !cum) { targetResultEl.innerHTML = ''; return; }
+    const needed = (target * (cum.credits + future) - cum.points) / future;
+    let message;
     if (needed > 4) {
-      message = 'A ' + target.toFixed(2) + ' CGPA is not reachable in the next ' + future +
-        ' credits - you would need a ' + needed.toFixed(2) + ' GPA, above the 4.00 maximum.';
+      message = `A ${target.toFixed(2)} CGPA is not reachable in the next ${future}` +
+        ` credits - you would need a ${needed.toFixed(2)} GPA, above the 4.00 maximum.`;
     } else if (needed <= 0) {
-      message = 'You have already secured a ' + target.toFixed(2) + ' CGPA even if the remaining ' + future + ' credits go badly.';
+      message = `You have already secured a ${target.toFixed(2)} CGPA even if the remaining ${future} credits go badly.`;
     } else {
-      message = 'You need an average GPA of <strong>' + needed.toFixed(2) + '</strong> over the next ' +
-        future + ' credits to reach a ' + target.toFixed(2) + ' CGPA.';
+      message = `You need an average GPA of <strong>${needed.toFixed(2)}</strong> over the next ` +
+        `${future} credits to reach a ${target.toFixed(2)} CGPA.`;
     }
-    targetResultEl.innerHTML = '<p class="sk-msg">' + message + '</p>';
+    targetResultEl.innerHTML = `<p class="sk-msg">${message}</p>`;
   }
 
-  document.getElementById('cg-add').addEventListener('click', function () {
-    var credit = parseFloat(creditEl.value);
-    if (isNaN(credit) || credit <= 0) return;
+  document.getElementById('cg-add').addEventListener('click', () => {
+    const credit = parseFloat(creditEl.value);
+    if (Number.isNaN(credit) || credit <= 0) {
+      courseMsgEl.textContent = 'Enter credit hours above 0 to add the course.';
+      return;
+    }
+    courseMsgEl.textContent = '';
     courses.push({
-      name: nameEl.value.trim() || 'Course ' + (courses.length + 1),
-      credit: credit,
+      name: nameEl.value.trim() || `Course ${courses.length + 1}`,
+      credit,
       grade: parseFloat(gradeEl.value)
     });
     nameEl.value = '';
@@ -192,11 +195,15 @@
     renderResult();
   });
 
-  document.getElementById('cg-sem-add').addEventListener('click', function () {
-    var gpa = parseFloat(semGpaEl.value);
-    var credits = parseFloat(semCreditEl.value);
-    if (isNaN(gpa) || isNaN(credits) || credits <= 0) return;
-    semesters.push({ name: semNameEl.value.trim() || 'Semester ' + (semesters.length + 1), gpa: gpa, credits: credits });
+  document.getElementById('cg-sem-add').addEventListener('click', () => {
+    const gpa = parseFloat(semGpaEl.value);
+    const credits = parseFloat(semCreditEl.value);
+    if (Number.isNaN(gpa) || Number.isNaN(credits) || credits <= 0) {
+      semMsgEl.textContent = 'Enter a GPA (0–4) and credit hours above 0 to add the semester.';
+      return;
+    }
+    semMsgEl.textContent = '';
+    semesters.push({ name: semNameEl.value.trim() || `Semester ${semesters.length + 1}`, gpa, credits });
     semNameEl.value = '';
     semGpaEl.value = '';
     semCreditEl.value = '';
@@ -204,9 +211,9 @@
     renderResult();
   });
 
-  root.addEventListener('click', function (event) {
-    var courseIndex = event.target.getAttribute && event.target.getAttribute('data-course');
-    var semesterIndex = event.target.getAttribute && event.target.getAttribute('data-semester');
+  root.addEventListener('click', (event) => {
+    const courseIndex = event.target.getAttribute && event.target.getAttribute('data-course');
+    const semesterIndex = event.target.getAttribute && event.target.getAttribute('data-semester');
     if (courseIndex !== null && courseIndex !== undefined) { courses.splice(Number(courseIndex), 1); renderLists(); renderResult(); }
     if (semesterIndex !== null && semesterIndex !== undefined) { semesters.splice(Number(semesterIndex), 1); renderLists(); renderResult(); }
   });

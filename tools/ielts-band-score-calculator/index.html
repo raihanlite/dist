@@ -39,7 +39,7 @@
 </header>
 <main class="wrap">
 <h1>IELTS Band Score Calculator</h1>
-<p>Calculate your overall IELTS band for Academic and General Training. Convert raw Listening and Reading scores to band scores.</p>
+<p>Calculate your overall IELTS band for Academic and General Training. Convert raw Listening and Reading scores to band scores. Bands are estimates: the exact conversion shifts slightly between test versions, and only your official Test Report Form is authoritative.</p>
 <div id="ielts-tool">
 <p><strong>Module</strong></p>
 <div id="ielts-module"><button type="button" data-module="academic" aria-pressed="true">Academic</button> <button type="button" data-module="general" aria-pressed="false">General Training</button></div>
@@ -59,83 +59,101 @@
 <div id="ielts-result" class="result" aria-live="polite"></div>
 </div>
 <script>
-(function () {
-  var root = document.getElementById('ielts-tool');
+(() => {
+  const root = document.getElementById('ielts-tool');
   if (!root) return;
 
-  var LISTENING = [[39, 9], [37, 8.5], [35, 8], [32, 7.5], [30, 7], [26, 6.5], [23, 6], [18, 5.5], [16, 5]];
-  var READING = {
-    academic: [[39, 9], [37, 8.5], [35, 8], [33, 7.5], [30, 7], [27, 6.5], [23, 6], [19, 5.5], [15, 5]],
-    general: [[40, 9], [39, 8.5], [37, 8], [36, 7.5], [34, 7], [32, 6.5], [30, 6], [27, 5.5], [23, 5]]
+  // Commonly published raw-score to band tables (IELTS/British Council/IDP guidance).
+  // Each row is the lowest raw score for that band; anything below the last row
+  // is band 2.0. Exact boundaries shift by about a mark between test versions.
+  const LISTENING = [
+    [39, 9], [37, 8.5], [35, 8], [32, 7.5], [30, 7], [26, 6.5], [23, 6],
+    [18, 5.5], [16, 5], [13, 4.5], [10, 4], [7, 3.5], [5, 3], [3, 2.5]
+  ];
+  const READING = {
+    academic: [
+      [39, 9], [37, 8.5], [35, 8], [33, 7.5], [30, 7], [27, 6.5], [23, 6],
+      [19, 5.5], [15, 5], [13, 4.5], [10, 4], [8, 3.5], [6, 3], [4, 2.5]
+    ],
+    general: [
+      [40, 9], [39, 8.5], [37, 8], [36, 7.5], [34, 7], [32, 6.5], [30, 6],
+      [27, 5.5], [23, 5], [19, 4.5], [15, 4], [12, 3.5], [9, 3], [6, 2.5], [4, 2]
+    ]
   };
+  const FLOOR_BAND = 2;
 
   function rawToBand(raw, section, module) {
-    raw = Math.floor(raw) || 0;
-    var table = section === 'listening' ? LISTENING : READING[module];
-    for (var i = 0; i < table.length; i++) {
-      if (raw >= table[i][0]) return table[i][1];
+    const score = Math.min(40, Math.max(0, Math.floor(raw) || 0));
+    const table = section === 'listening' ? LISTENING : READING[module];
+    for (const [minRaw, band] of table) {
+      if (score >= minRaw) return band;
     }
-    return section === 'listening' ? Math.max(0, raw / 4 - 1) : 0;
+    return FLOOR_BAND;
   }
 
-  var module = 'academic';
-  var listeningEl = document.getElementById('ielts-listening');
-  var readingEl = document.getElementById('ielts-reading');
-  var listeningBandEl = document.getElementById('ielts-listening-band');
-  var readingBandEl = document.getElementById('ielts-reading-band');
-  var writingEl = document.getElementById('ielts-writing');
-  var speakingEl = document.getElementById('ielts-speaking');
-  var resultEl = document.getElementById('ielts-result');
+  let module = 'academic';
+  const listeningEl = document.getElementById('ielts-listening');
+  const readingEl = document.getElementById('ielts-reading');
+  const listeningBandEl = document.getElementById('ielts-listening-band');
+  const readingBandEl = document.getElementById('ielts-reading-band');
+  const writingEl = document.getElementById('ielts-writing');
+  const speakingEl = document.getElementById('ielts-speaking');
+  const resultEl = document.getElementById('ielts-result');
 
-  var bandOptions = ['<option value="0">Not set</option>'];
-  for (var b = 0.5; b <= 9; b += 0.5) bandOptions.push('<option value="' + b + '">' + b.toFixed(1) + '</option>');
+  const bandOptions = ['<option value="0">Not set</option>'];
+  for (let b = 0.5; b <= 9; b += 0.5) bandOptions.push(`<option value="${b}">${b.toFixed(1)}</option>`);
   writingEl.innerHTML = bandOptions.join('');
   speakingEl.innerHTML = bandOptions.join('');
 
   function update() {
-    var listening = listeningEl.value === '' ? 0 : Math.floor(rawToBand(parseInt(listeningEl.value, 10), 'listening', module) * 2) / 2;
-    var reading = readingEl.value === '' ? 0 : Math.floor(rawToBand(parseInt(readingEl.value, 10), 'reading', module) * 2) / 2;
-    listeningBandEl.textContent = 'Band: ' + (listeningEl.value === '' ? '-' : listening.toFixed(1));
-    readingBandEl.textContent = 'Band: ' + (readingEl.value === '' ? '-' : reading.toFixed(1));
+    const listeningSet = listeningEl.value !== '';
+    const readingSet = readingEl.value !== '';
+    const listening = listeningSet ? rawToBand(parseInt(listeningEl.value, 10), 'listening', module) : null;
+    const reading = readingSet ? rawToBand(parseInt(readingEl.value, 10), 'reading', module) : null;
+    listeningBandEl.textContent = `Band: ${listeningSet ? listening.toFixed(1) : '-'}`;
+    readingBandEl.textContent = `Band: ${readingSet ? reading.toFixed(1) : '-'}`;
 
-    var writing = parseFloat(writingEl.value) || 0;
-    var speaking = parseFloat(speakingEl.value) || 0;
-    var scores = [listening, reading, writing, speaking];
+    const writing = parseFloat(writingEl.value) || 0;
+    const speaking = parseFloat(speakingEl.value) || 0;
 
-    if (scores.every(function (s) { return s === 0; })) { resultEl.innerHTML = ''; return; }
+    // An unset module is not a zero — the overall band needs all four.
+    if (!listeningSet || !readingSet || writing === 0 || speaking === 0) {
+      resultEl.innerHTML = '<p class="sk-msg">Set all four modules — Listening, Reading, Writing and Speaking — to see your overall band.</p>';
+      return;
+    }
 
-    var average = (listening + reading + writing + speaking) / 4;
-    var fraction = average % 1;
-    var overall;
+    const average = (listening + reading + writing + speaking) / 4;
+    const fraction = average % 1;
+    let overall;
     if (fraction < 0.25) overall = Math.floor(average);
     else if (fraction < 0.75) overall = Math.floor(average) + 0.5;
     else overall = Math.ceil(average);
 
-    var note = overall >= 8 ? 'Expert / Very Good user - outstanding.'
+    const note = overall >= 8 ? 'Expert / Very Good user - outstanding.'
       : overall >= 7 ? 'Good user - competitive for top universities.'
       : overall >= 6 ? 'Competent user - meets most undergraduate requirements.'
       : 'Modest user - more practice needed.';
 
     resultEl.innerHTML =
       '<div class="sk-result"><p class="sk-result-label">Overall band score</p>' +
-      '<p class="sk-result-value">' + overall.toFixed(1) + '</p>' +
-      '<p class="sk-result-note">' + note + '</p>' +
-      '<p class="sk-result-note">L ' + listening.toFixed(1) + ' - R ' + reading.toFixed(1) +
-      ' - W ' + writing.toFixed(1) + ' - S ' + speaking.toFixed(1) + '</p></div>';
+      `<p class="sk-result-value">${overall.toFixed(1)}</p>` +
+      `<p class="sk-result-note">${note}</p>` +
+      `<p class="sk-result-note">L ${listening.toFixed(1)} - R ${reading.toFixed(1)}` +
+      ` - W ${writing.toFixed(1)} - S ${speaking.toFixed(1)}</p></div>`;
   }
 
-  root.querySelectorAll('#ielts-module button').forEach(function (button) {
-    button.addEventListener('click', function () {
+  root.querySelectorAll('#ielts-module button').forEach((button) => {
+    button.addEventListener('click', () => {
       module = button.getAttribute('data-module');
-      root.querySelectorAll('#ielts-module button').forEach(function (other) {
+      root.querySelectorAll('#ielts-module button').forEach((other) => {
         other.setAttribute('aria-pressed', String(other === button));
       });
       update();
     });
   });
 
-  [listeningEl, readingEl].forEach(function (el) { el.addEventListener('input', update); });
-  [writingEl, speakingEl].forEach(function (el) { el.addEventListener('change', update); });
+  [listeningEl, readingEl].forEach((el) => el.addEventListener('input', update));
+  [writingEl, speakingEl].forEach((el) => el.addEventListener('change', update));
 })();
 </script>
 </main>

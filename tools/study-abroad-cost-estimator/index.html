@@ -59,14 +59,19 @@
 </div>
 
 <h2>What the defaults mean</h2>
-<p>Defaults are typical starting points, not quotes. Tuition is a mid-range figure — your offer letter is the real number. Living cost uses the official visa proof figure where one exists (UK, Canada, Australia, Germany); for the USA, Japan, China and Malaysia it is a typical estimate. For the UK, the visa field includes the £558 application fee plus one year of the Immigration Health Surcharge (£776). For Germany, health insurance is counted inside the €992-a-month living figure, so the insurance field is 0. For Japan, China and Malaysia the visa fee varies by nationality, so the field starts at 0 — check the embassy and type in the real fee.</p>
-<p>BDT totals use mid-market exchange rates of 19 November 2026 (USD ৳124.50, GBP ৳163.50, CAD ৳87.00, AUD ৳83.50, EUR ৳136.80, JPY ৳0.78, CNY ৳18.70, MYR ৳30.25). Rates move daily — the BDT figure is approximate. See the full comparison in <a href="/costs/compare/">Cost of Studying Abroad Compared</a>.</p>
+<ul>
+<li>Defaults are typical starting points, not quotes — your offer letter is the real tuition figure.</li>
+<li><strong>UK:</strong> the visa field includes the £558 application fee + one year of the Immigration Health Surcharge (£776). Maintenance money is proof, not a fee.</li>
+<li><strong>Germany:</strong> health insurance is inside the €992-a-month living figure, so the insurance field is 0. You must also hold €11,904 in a blocked account.</li>
+<li><strong>Japan, China, Malaysia:</strong> the visa field starts at 0 — check the embassy and type in the real fee.</li>
+<li>BDT totals use mid-market rates of 19 Nov 2026 (USD ৳124.50, GBP ৳163.50, CAD ৳87.00, AUD ৳83.50, EUR ৳136.80, JPY ৳0.78, CNY ৳18.70, MYR ৳30.25). Rates move daily. Full comparison: <a href="/costs/compare/">Cost of Studying Abroad Compared</a>.</li>
+</ul>
 <script>
-(function () {
-  var root = document.getElementById('cost-tool');
+(() => {
+  const root = document.getElementById('cost-tool');
   if (!root) return;
 
-  var COUNTRIES = {
+  const COUNTRIES = {
     usa: { name: 'USA', currency: 'USD', symbol: '$', rate: 124.5, tuition: 30000, living: 1200, visa: 535, insurance: 2000, flights: 1200, note: 'Visa fee is SEVIS $350 + MRV $185. The $250 Visa Integrity Fee is being phased in and is not included — budget for it separately.' },
     uk: { name: 'UK', currency: 'GBP', symbol: '£', rate: 163.5, tuition: 18000, living: 1300, visa: 1334, insurance: 0, flights: 700, note: 'Visa field includes the £558 application fee + one year of the Immigration Health Surcharge (£776). Maintenance money (£1,529/month London, £1,171 elsewhere) is separate proof, not a fee.' },
     canada: { name: 'Canada', currency: 'CAD', symbol: 'CAD $', rate: 87, tuition: 25000, living: 1950, visa: 235, insurance: 800, flights: 1100, note: 'Visa fee is the CAD $150 study permit + CAD $85 biometrics. Living cost is the official proof figure, CAD $23,448 a year.' },
@@ -77,37 +82,29 @@
     malaysia: { name: 'Malaysia', currency: 'MYR', symbol: 'RM ', rate: 30.25, tuition: 30000, living: 2000, visa: 0, insurance: 500, flights: 1500, note: 'Tuition and living costs are typical ranges. The visa fee varies by nationality — check the Malaysian High Commission in Dhaka.' }
   };
 
-  var countryEl = document.getElementById('cost-country');
-  var tuitionEl = document.getElementById('cost-tuition');
-  var livingEl = document.getElementById('cost-living');
-  var visaEl = document.getElementById('cost-visa');
-  var insuranceEl = document.getElementById('cost-insurance');
-  var flightsEl = document.getElementById('cost-flights');
-  var calcEl = document.getElementById('cost-calc');
-  var resultEl = document.getElementById('cost-result');
-  var notesEl = document.getElementById('cost-notes');
+  const countryEl = document.getElementById('cost-country');
+  const tuitionEl = document.getElementById('cost-tuition');
+  const livingEl = document.getElementById('cost-living');
+  const visaEl = document.getElementById('cost-visa');
+  const insuranceEl = document.getElementById('cost-insurance');
+  const flightsEl = document.getElementById('cost-flights');
+  const calcEl = document.getElementById('cost-calc');
+  const resultEl = document.getElementById('cost-result');
+  const notesEl = document.getElementById('cost-notes');
 
-  var options = [];
-  Object.keys(COUNTRIES).forEach(function (key) {
-    options.push('<option value="' + key + '">' + COUNTRIES[key].name + ' (' + COUNTRIES[key].currency + ')</option>');
-  });
-  countryEl.innerHTML = options.join('');
+  countryEl.innerHTML = Object.keys(COUNTRIES).map((key) =>
+    `<option value="${key}">${COUNTRIES[key].name} (${COUNTRIES[key].currency})</option>`).join('');
 
-  function num(el) {
-    var v = parseFloat(el.value);
-    return isNaN(v) || v < 0 ? 0 : v;
-  }
+  const num = (el) => {
+    const v = parseFloat(el.value);
+    return Number.isNaN(v) || v < 0 ? 0 : v;
+  };
 
-  function fmt(n) {
-    return Math.round(n).toLocaleString('en-US');
-  }
-
-  function lakh(n) {
-    return (n / 100000).toFixed(1);
-  }
+  const fmt = (n) => Math.round(n).toLocaleString('en-US');
+  const lakh = (n) => (n / 100000).toFixed(1);
 
   function fillDefaults() {
-    var c = COUNTRIES[countryEl.value];
+    const c = COUNTRIES[countryEl.value];
     if (!c) return;
     tuitionEl.value = c.tuition;
     livingEl.value = c.living;
@@ -115,31 +112,34 @@
     insuranceEl.value = c.insurance;
     flightsEl.value = c.flights;
     notesEl.textContent = c.note;
-    resultEl.innerHTML = '';
   }
 
   function calculate() {
-    var c = COUNTRIES[countryEl.value];
+    const c = COUNTRIES[countryEl.value];
     if (!c) return;
-    var tuition = num(tuitionEl);
-    var livingYear = num(livingEl) * 12;
-    var visa = num(visaEl);
-    var insurance = num(insuranceEl);
-    var flights = num(flightsEl);
-    var total = tuition + livingYear + visa + insurance + flights;
-    var bdt = total * c.rate;
+    const tuition = num(tuitionEl);
+    const livingYear = num(livingEl) * 12;
+    const visa = num(visaEl);
+    const insurance = num(insuranceEl);
+    const flights = num(flightsEl);
+    const total = tuition + livingYear + visa + insurance + flights;
+    const bdt = total * c.rate;
 
     resultEl.innerHTML =
       '<div class="sk-result"><p class="sk-result-label">First-year total — ' + c.name + '</p>' +
-      '<p class="sk-result-value">' + c.symbol + fmt(total) + ' ' + c.currency + '</p>' +
-      '<p class="sk-result-note">About ৳' + fmt(bdt) + ' (roughly ৳' + lakh(bdt) + ' lakh) at the 19 Nov 2026 mid-market rate of ' + c.rate + ' BDT per ' + c.currency + ' — approximate.</p>' +
-      '<p class="sk-result-note">Tuition ' + c.symbol + fmt(tuition) + ' + living ' + c.symbol + fmt(livingYear) + ' (12 months) + visa ' + c.symbol + fmt(visa) + ' + insurance ' + c.symbol + fmt(insurance) + ' + flights ' + c.symbol + fmt(flights) + '</p>' +
+      `<p class="sk-result-value">${c.symbol}${fmt(total)} ${c.currency}</p>` +
+      `<p class="sk-result-note">About ৳${fmt(bdt)} (roughly ৳${lakh(bdt)} lakh) at the 19 Nov 2026 mid-market rate of ${c.rate} BDT per ${c.currency} — approximate.</p>` +
+      `<p class="sk-result-note">Tuition ${c.symbol}${fmt(tuition)} + living ${c.symbol}${fmt(livingYear)} (12 months) + visa ${c.symbol}${fmt(visa)} + insurance ${c.symbol}${fmt(insurance)} + flights ${c.symbol}${fmt(flights)}</p>` +
       '<p class="sk-result-note">This is a planning estimate. Confirm tuition on your offer letter and fees on the official source before you pay anything.</p></div>';
   }
 
-  countryEl.addEventListener('change', fillDefaults);
+  countryEl.addEventListener('change', () => { fillDefaults(); calculate(); });
   calcEl.addEventListener('click', calculate);
+  // Live total as figures are edited; the button stays for explicit recalculation.
+  [tuitionEl, livingEl, visaEl, insuranceEl, flightsEl].forEach((el) =>
+    el.addEventListener('input', calculate));
   fillDefaults();
+  calculate();
 })();
 </script>
 </main>

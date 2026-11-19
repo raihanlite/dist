@@ -56,31 +56,32 @@
 <div id="ssc-result" class="result" aria-live="polite"></div>
 </div>
 <script>
-(function () {
-  var root = document.getElementById('ssc-tool');
+(() => {
+  const root = document.getElementById('ssc-tool');
   if (!root) return;
 
-  var GROUPS = {
+  const GROUPS = {
     science: ['Bangla', 'English', 'Math', 'Religion', 'ICT', 'Bangladesh & Global Studies', 'Physics', 'Chemistry'],
     commerce: ['Bangla', 'English', 'Math', 'Religion', 'ICT', 'General Science', 'Accounting', 'Business Entrepreneurship', 'Finance'],
     arts: ['Bangla', 'English', 'Math', 'Religion', 'ICT', 'General Science', 'History', 'Geography', 'Civics']
   };
-  var FOURTH = {
+  const FOURTH = {
     science: ['Biology', 'Higher Math'],
     commerce: ['Accounting', 'Business Entrepreneurship', 'Finance'],
     arts: ['History', 'Geography', 'Civics']
   };
-  var GRADES = [
-      { label: 'A+ (5.00)', value: 5 },
-      { label: 'A (4.00)', value: 4 },
-      { label: 'A- (3.50)', value: 3.5 },
-      { label: 'B (3.00)', value: 3 },
-      { label: 'C (2.00)', value: 2 },
-      { label: 'D (1.00)', value: 1 },
-      { label: 'F (0.00)', value: 0 }
-    ];
+  const GRADES = [
+    { label: 'A+ (5.00)', value: 5 },
+    { label: 'A (4.00)', value: 4 },
+    { label: 'A- (3.50)', value: 3.5 },
+    { label: 'B (3.00)', value: 3 },
+    { label: 'C (2.00)', value: 2 },
+    { label: 'D (1.00)', value: 1 },
+    { label: 'F (0.00)', value: 0 }
+  ];
 
-  function marksToPoint(m) {
+  // Bangladesh SSC grading scale (marks out of 100).
+  const marksToPoint = (m) => {
     if (m >= 80) return 5;
     if (m >= 70) return 4;
     if (m >= 60) return 3.5;
@@ -88,26 +89,26 @@
     if (m >= 40) return 2;
     if (m >= 33) return 1;
     return 0;
-  }
+  };
 
-  var groupEl = document.getElementById('ssc-group');
-  var modeEl = document.getElementById('ssc-mode');
-  var subjectsEl = document.getElementById('ssc-subjects');
-  var extrasEl = document.getElementById('ssc-extras');
-  var resultEl = document.getElementById('ssc-result');
+  const groupEl = document.getElementById('ssc-group');
+  const modeEl = document.getElementById('ssc-mode');
+  const subjectsEl = document.getElementById('ssc-subjects');
+  const extrasEl = document.getElementById('ssc-extras');
+  const resultEl = document.getElementById('ssc-result');
 
   function valueInput(id, label) {
-    var wrap = document.createElement('div');
+    const wrap = document.createElement('div');
     wrap.className = 'sk-field';
-    var lab = document.createElement('label');
+    const lab = document.createElement('label');
     lab.setAttribute('for', id);
     lab.textContent = label;
     wrap.appendChild(lab);
-    var field;
+    let field;
     if (modeEl.value === 'grade') {
       field = document.createElement('select');
       field.innerHTML = '<option value="">Select grade</option>' +
-        GRADES.map(function (g) { return '<option value="' + g.value + '">' + g.label + '</option>'; }).join('');
+        GRADES.map((g) => `<option value="${g.value}">${g.label}</option>`).join('');
     } else {
       field = document.createElement('input');
       field.type = 'number';
@@ -122,57 +123,70 @@
     return wrap;
   }
 
+  // null = not entered yet (an empty field is not a grade, and never an F).
   function pointOf(el) {
-    var raw = el.value;
-    if (raw === '') return 0;
-    var num = parseFloat(raw);
-    if (isNaN(num)) return 0;
+    if (el.value === '') return null;
+    const num = parseFloat(el.value);
+    if (Number.isNaN(num)) return null;
     return modeEl.value === 'grade' ? num : marksToPoint(num);
   }
 
   function render() {
-    var group = groupEl.value;
+    const group = groupEl.value;
     subjectsEl.innerHTML = '';
-    GROUPS[group].forEach(function (name, i) {
-      subjectsEl.appendChild(valueInput('ssc-sub-' + i, name));
+    GROUPS[group].forEach((name, i) => {
+      subjectsEl.appendChild(valueInput(`ssc-sub-${i}`, name));
     });
 
     extrasEl.innerHTML = '';
-    var select = document.createElement('div');
+    const select = document.createElement('div');
     select.className = 'sk-field';
     select.innerHTML = '<label for="ssc-fourth">4th subject</label><select id="ssc-fourth">' +
-      FOURTH[group].map(function (s) { return '<option>' + s + '</option>'; }).join('') + '</select>';
+      FOURTH[group].map((s) => `<option>${s}</option>`).join('') + '</select>';
     extrasEl.appendChild(select);
     extrasEl.appendChild(valueInput('ssc-fourth-value', '4th subject result'));
     resultEl.innerHTML = '';
   }
 
-  function calculate() {
-    var points = [].slice.call(subjectsEl.querySelectorAll('.sk-value')).map(pointOf);
-    if (!points.length) return;
-    var failed = points.some(function (p) { return p === 0; });
-    var total = points.reduce(function (a, b) { return a + b; }, 0);
-    var fourth = pointOf(document.getElementById('ssc-fourth-value'));
-    var bonus = fourth > 2 ? fourth - 2 : 0;
-    var gpa = (total + bonus) / points.length;
+  // showHint: the Calculate button explains what is missing; live updates stay quiet.
+  function calculate(showHint = true) {
+    const fields = [...subjectsEl.querySelectorAll('.sk-value')];
+    const points = fields.map(pointOf);
+    if (points.some((p) => p === null)) {
+      resultEl.innerHTML = showHint
+        ? '<p class="sk-msg">Fill in every core subject first — an empty field is not a grade.</p>'
+        : '';
+      return;
+    }
+    const failed = points.some((p) => p === 0);
+    const total = points.reduce((a, b) => a + b, 0);
+    const fourthEl = document.getElementById('ssc-fourth-value');
+    const fourth = fourthEl ? pointOf(fourthEl) : null;
+    const bonus = fourth !== null && fourth > 2 ? fourth - 2 : 0;
+    let gpa = (total + bonus) / points.length;
     if (gpa > 5) gpa = 5;
     if (failed) gpa = 0;
 
-    var status = failed
+    const status = failed
       ? '<span class="sk-bad">Failed - an F in any subject makes the overall GPA 0.00</span>'
       : (gpa >= 5 ? '<span class="sk-ok">Golden A+</span>' : '<span class="sk-ok">Passed</span>');
 
     resultEl.innerHTML =
       '<div class="sk-result"><p class="sk-result-label">Your SSC GPA</p>' +
-      '<p class="sk-result-value">' + gpa.toFixed(2) + '</p>' +
-      '<p class="sk-result-note">' + status + '</p>' +
-      '<p class="sk-result-note">Total grade points: ' + total.toFixed(2) + ' - 4th subject bonus: ' + bonus.toFixed(2) + '</p></div>';
+      `<p class="sk-result-value">${gpa.toFixed(2)}</p>` +
+      `<p class="sk-result-note">${status}</p>` +
+      `<p class="sk-result-note">Total grade points: ${total.toFixed(2)} - 4th subject bonus: ${bonus.toFixed(2)}</p></div>`;
   }
 
   groupEl.addEventListener('change', render);
   modeEl.addEventListener('change', render);
-  document.getElementById('ssc-calc').addEventListener('click', calculate);
+  document.getElementById('ssc-calc').addEventListener('click', () => calculate());
   document.getElementById('ssc-reset').addEventListener('click', render);
+  // Live result once every field is filled; quiet until then.
+  subjectsEl.addEventListener('input', () => calculate(false));
+  subjectsEl.addEventListener('change', () => calculate(false));
+  extrasEl.addEventListener('input', () => calculate(false));
+  extrasEl.addEventListener('change', () => calculate(false));
   render();
 })();
 </script>
