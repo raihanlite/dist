@@ -1,110 +1,242 @@
-/* Study Koro — simple clean theme. No frameworks, no JS needed for layout. */
+/* StudyKoro — warm, premium theme (Nov 2026). No frameworks, no JS needed
+ * for layout. One restrained accent, serif headings, generous spacing.
+ * Class names are the site's contract: guides, tools (calc.js) and the
+ * SSG all rely on them — restyle, don't rename. */
+:root {
+  --paper: #fbf9f4;
+  --surface: #ffffff;
+  --ink: #23201c;
+  --muted: #6b655c;
+  --line: #e7e0d3;
+  --accent: #0e5a46;
+  --accent-ink: #0a4234;
+  --accent-soft: #e9f2ee;
+  --accent-line: #c8dcd2;
+  --danger: #b3261e;
+}
 * { box-sizing: border-box; }
 body {
   margin: 0;
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
   font-size: 18px;
   line-height: 1.7;
-  color: #1a1a1a;
-  background: #fff;
+  color: var(--ink);
+  background: var(--paper);
 }
-.wrap { max-width: 720px; margin: 0 auto; padding: 0 20px; }
-a { color: #1a5fb4; text-decoration: none; }
+.wrap { max-width: 760px; margin: 0 auto; padding: 0 20px; }
+a { color: var(--accent); text-decoration: none; }
 a:hover { text-decoration: underline; }
+a:focus-visible, button:focus-visible, input:focus-visible, select:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
 
 /* Header */
-.site-header { border-bottom: 1px solid #e5e5e5; padding: 20px 0 14px; }
-.brand { font-size: 28px; font-weight: 700; color: #1a1a1a; }
-.brand:hover { text-decoration: none; }
-.tagline { margin: 2px 0 12px; color: #666; font-size: 15px; }
-.site-header nav { display: flex; flex-wrap: wrap; gap: 4px 20px; }
-.site-header nav a { color: #333; font-size: 16px; }
-.site-header nav a:hover { color: #1a5fb4; }
+.site-header { background: var(--surface); border-bottom: 1px solid var(--line); padding: 22px 0 0; }
+.brand {
+  font-family: "Cormorant Garamond", Georgia, "Times New Roman", serif;
+  font-size: 32px; font-weight: 700; line-height: 1.1; color: var(--ink);
+}
+.brand:hover { text-decoration: none; color: var(--accent); }
+.tagline { margin: 4px 0 0; color: var(--muted); font-size: 15px; }
+
+/* Primary nav — grouped dropdown, pure CSS */
+.site-header nav { margin-top: 14px; }
+.nav {
+  display: flex; flex-wrap: wrap; gap: 2px 28px;
+  list-style: none; margin: 0; padding: 0;
+}
+.nav > li { position: relative; }
+.nav a {
+  display: inline-block; padding: 10px 2px;
+  color: var(--ink); font-size: 16px; font-weight: 600;
+}
+.nav a:hover { color: var(--accent); text-decoration: none; }
+.has-sub > a::after { content: " \25BE"; font-size: 11px; color: var(--muted); }
+.sub {
+  display: none;
+  position: absolute; top: 100%; left: -12px; z-index: 10;
+  min-width: 220px; margin: 0; padding: 6px 0; list-style: none;
+  background: var(--surface); border: 1px solid var(--line); border-radius: 8px;
+  box-shadow: 0 8px 24px rgba(35, 32, 28, 0.12);
+}
+.has-sub:hover .sub, .has-sub:focus-within .sub { display: block; }
+.sub a { display: block; padding: 8px 16px; font-weight: 400; }
+.sub a:hover { background: var(--accent-soft); }
+/* Active page: current section, top level and dropdown item alike */
+body[data-section="home"] .nav-home,
+body[data-section="study-abroad"] .nav-study,
+body[data-section="countries"] .nav-study,
+body[data-section="scholarships"] .nav-study,
+body[data-section="admissions"] .nav-study,
+body[data-section="visas"] .nav-study,
+body[data-section="costs"] .nav-study,
+body[data-section="guides"] .nav-guides,
+body[data-section="tools"] .nav-tools,
+body[data-section="about"] .nav-about { color: var(--accent); }
+body[data-section="study-abroad"] .nav-study-abroad,
+body[data-section="countries"] .nav-countries,
+body[data-section="scholarships"] .nav-scholarships,
+body[data-section="admissions"] .nav-admissions,
+body[data-section="visas"] .nav-visas,
+body[data-section="costs"] .nav-costs { font-weight: 700; }
 
 /* Content */
-main { padding: 28px 0 48px; }
-h1 { font-size: 32px; line-height: 1.25; margin: 0 0 8px; }
-h2 { font-size: 24px; line-height: 1.3; margin: 32px 0 10px; }
-h3 { font-size: 20px; margin: 24px 0 8px; }
+main { padding: 32px 0 56px; }
+h1, h2, h3 {
+  font-family: "Cormorant Garamond", Georgia, "Times New Roman", serif;
+  font-weight: 700; color: var(--ink);
+}
+h1 { font-size: 36px; line-height: 1.2; margin: 0 0 10px; }
+h2 { font-size: 28px; line-height: 1.25; margin: 36px 0 10px; }
+h3 { font-size: 23px; margin: 26px 0 8px; }
 p { margin: 0 0 16px; }
-.byline { color: #666; font-size: 15px; margin-bottom: 24px; }
+.byline { color: var(--muted); font-size: 15px; margin-bottom: 26px; }
 ul, ol { margin: 0 0 16px; padding-left: 24px; }
 li { margin-bottom: 6px; }
 table { border-collapse: collapse; width: 100%; margin: 0 0 20px; font-size: 16px; }
-th, td { border: 1px solid #ddd; padding: 8px 10px; text-align: left; }
-th { background: #f5f5f5; }
-blockquote { margin: 0 0 16px; padding-left: 16px; border-left: 3px solid #ddd; color: #555; }
+th, td { border: 1px solid var(--line); padding: 9px 12px; text-align: left; }
+th { background: var(--accent-soft); color: var(--accent-ink); }
+blockquote {
+  margin: 0 0 16px; padding: 14px 18px;
+  border-left: 3px solid var(--accent); background: var(--accent-soft);
+  color: #444; border-radius: 0 6px 6px 0;
+}
+blockquote p:last-child { margin-bottom: 0; }
 
-/* Post lists */
+/* Post lists — cards */
 .post-list { list-style: none; padding: 0; }
-.post-list li { margin-bottom: 22px; }
-.post-list a { font-size: 20px; font-weight: 600; }
-.post-list .meta { color: #666; font-size: 14px; display: block; margin-top: 2px; }
+.post-list li {
+  margin-bottom: 14px; padding: 16px 18px;
+  background: var(--surface); border: 1px solid var(--line); border-radius: 8px;
+}
+.post-list li:hover { border-color: var(--accent); }
+.post-list a {
+  font-family: "Cormorant Garamond", Georgia, "Times New Roman", serif;
+  font-size: 22px; font-weight: 700; line-height: 1.3; color: var(--ink);
+}
+.post-list a:hover { color: var(--accent); text-decoration: none; }
+.post-list .meta { color: var(--muted); font-size: 14px; display: block; margin-top: 2px; }
 .post-list p { margin: 6px 0 0; color: #444; font-size: 16px; }
 
 /* Prev / next + related */
-.prev-next { display: flex; justify-content: space-between; gap: 16px; margin: 40px 0 0; padding-top: 20px; border-top: 1px solid #e5e5e5; font-size: 16px; }
+.prev-next {
+  display: flex; justify-content: space-between; gap: 16px;
+  margin: 44px 0 0; padding-top: 22px; border-top: 1px solid var(--line); font-size: 16px;
+}
 .prev-next .next { text-align: right; }
-.related { margin-top: 32px; }
+.related { margin-top: 36px; }
 
 /* Calculators */
 form { margin: 0 0 20px; }
 label { display: block; font-weight: 600; margin: 14px 0 4px; font-size: 16px; }
 input[type="number"], input[type="text"], select {
-  width: 100%; max-width: 420px; padding: 10px 12px; font-size: 16px;
-  border: 1px solid #ccc; border-radius: 4px; background: #fff; color: #1a1a1a;
+  width: 100%; max-width: 420px; padding: 11px 12px; font-size: 16px;
+  border: 1px solid #d8d0c0; border-radius: 6px; background: var(--surface); color: var(--ink);
+}
+input[type="number"]:focus, input[type="text"]:focus, select:focus {
+  border-color: var(--accent); outline: 2px solid rgba(14, 90, 70, 0.2); outline-offset: 0;
 }
 button, input[type="submit"] {
-  margin-top: 18px; padding: 11px 22px; font-size: 16px; font-weight: 600;
-  color: #fff; background: #1a5fb4; border: none; border-radius: 4px; cursor: pointer;
+  margin-top: 18px; padding: 12px 24px; font-size: 16px; font-weight: 600;
+  color: #fff; background: var(--accent); border: none; border-radius: 6px; cursor: pointer;
 }
-button:hover, input[type="submit"]:hover { background: #134a8c; }
-.result { margin: 20px 0; padding: 16px; background: #f0f6fd; border: 1px solid #bcd6f5; border-radius: 4px; }
+button:hover, input[type="submit"]:hover { background: var(--accent-ink); }
+.result {
+  margin: 20px 0; padding: 18px;
+  background: var(--accent-soft); border: 1px solid var(--accent-line); border-radius: 8px;
+}
 .result:empty { display: none; }
 
 /* Result bits generated by the calculator scripts at runtime */
-.sk-result-value { font-size: 28px; font-weight: 700; line-height: 1.2; }
-.sk-result-label { color: #666; font-size: 14px; }
+.sk-result-value {
+  font-family: "Cormorant Garamond", Georgia, "Times New Roman", serif;
+  font-size: 36px; font-weight: 700; line-height: 1.1;
+}
+.sk-result-label { color: var(--muted); font-size: 14px; }
 .sk-result-note { font-size: 15px; color: #444; margin: 6px 0 0; }
 .sk-field { margin-bottom: 10px; }
 .sk-row { display: flex; gap: 10px; flex-wrap: wrap; align-items: end; }
 .sk-msg { font-size: 15px; margin: 8px 0; }
-.sk-ok { color: #1a7f37; }
-.sk-bad { color: #b3261e; }
+.sk-ok { color: var(--accent); }
+.sk-bad { color: var(--danger); }
 .sk-value { font-weight: 600; }
 .sk-subject { font-weight: 600; }
-.sk-remove { background: none; color: #b3261e; padding: 4px 8px; margin: 0; font-size: 14px; }
+.sk-remove { background: none; color: var(--danger); padding: 4px 8px; margin: 0; font-size: 14px; }
 .sk-remove:hover { background: #fdecea; }
 
-/* Footer */
-.site-footer { border-top: 1px solid #e5e5e5; padding: 24px 0 32px; color: #666; font-size: 15px; }
-.site-footer nav { display: flex; flex-wrap: wrap; gap: 4px 18px; margin-top: 8px; }
-.site-footer nav a { color: #666; }
+/* Footer — three columns: guides, tools, about/legal */
+.site-footer {
+  border-top: 1px solid var(--line); background: #f1ece2;
+  padding: 32px 0 36px; color: var(--muted); font-size: 15px;
+}
+.foot-cols {
+  display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 24px; margin-bottom: 24px;
+}
+.foot-title {
+  margin: 0 0 10px; font-size: 14px; font-weight: 700;
+  text-transform: uppercase; letter-spacing: 0.06em; color: var(--ink);
+}
+.foot-cols ul { list-style: none; margin: 0; padding: 0; }
+.foot-cols li { margin-bottom: 6px; }
+.foot-cols a { color: var(--muted); }
+.foot-cols a:hover { color: var(--accent); }
+.copyright { margin: 0; padding-top: 20px; border-top: 1px solid var(--line); }
 
-@media (max-width: 560px) {
+@media (max-width: 640px) {
   body { font-size: 17px; }
-  h1 { font-size: 27px; }
-  h2 { font-size: 22px; }
-  .brand { font-size: 24px; }
+  h1 { font-size: 29px; }
+  h2 { font-size: 24px; }
+  .brand { font-size: 28px; }
+  /* Nav becomes a stacked list; the dropdown is always open, indented */
+  .nav { flex-direction: column; gap: 0; }
+  .nav > li { border-top: 1px solid var(--line); }
+  .nav a { display: block; padding: 11px 0; }
+  .has-sub > a::after { content: ""; }
+  .sub {
+    position: static; display: block;
+    border: none; box-shadow: none; padding: 0 0 8px 18px;
+    background: transparent; min-width: 0;
+  }
+  .sub a { padding: 6px 0; font-size: 15px; color: var(--muted); }
+  .sub a:hover { background: transparent; }
+  .foot-cols { grid-template-columns: 1fr; gap: 20px; }
 }
 
 /* Study-abroad guide components: facts first, tables over paragraphs */
-.callout { margin: 0 0 20px; padding: 16px 18px; background: #f0f6fd; border: 1px solid #bcd6f5; border-radius: 4px; }
+.callout {
+  margin: 0 0 20px; padding: 16px 18px;
+  background: var(--accent-soft); border: 1px solid var(--accent-line); border-radius: 8px;
+}
 .callout p:last-child { margin-bottom: 0; }
-.callout strong { color: #134a8c; }
+.callout strong { color: var(--accent-ink); }
 .stat-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 12px; margin: 0 0 20px; }
-.stat { padding: 14px; background: #f5f5f5; border: 1px solid #e5e5e5; border-radius: 4px; }
-.stat .value { font-size: 22px; font-weight: 700; line-height: 1.2; }
-.stat .label { font-size: 14px; color: #666; margin-top: 2px; }
+.stat { padding: 14px; background: var(--surface); border: 1px solid var(--line); border-radius: 8px; }
+.stat .value {
+  font-family: "Cormorant Garamond", Georgia, "Times New Roman", serif;
+  font-size: 26px; font-weight: 700; line-height: 1.2;
+}
+.stat .label { font-size: 14px; color: var(--muted); margin-top: 2px; }
 .checklist { list-style: none; padding-left: 0; }
 .checklist li { padding-left: 28px; position: relative; margin-bottom: 8px; }
-.checklist li::before { content: "\2713"; position: absolute; left: 4px; color: #1a7f37; font-weight: 700; }
-.compare th { background: #f0f6fd; }
+.checklist li::before { content: "\2713"; position: absolute; left: 4px; color: var(--accent); font-weight: 700; }
+.compare th { background: var(--accent-soft); }
 .resource-list { list-style: none; padding-left: 0; }
 .resource-list li { margin-bottom: 8px; }
 .card-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px; margin: 0 0 20px; }
-.card-grid a { display: block; padding: 14px; border: 1px solid #e5e5e5; border-radius: 4px; color: #1a1a1a; }
-.card-grid a:hover { border-color: #1a5fb4; text-decoration: none; }
-.card-grid strong { display: block; font-size: 18px; margin-bottom: 2px; }
-.card-grid span { font-size: 15px; color: #666; }
-.tag { display: inline-block; font-size: 13px; font-weight: 600; color: #134a8c; background: #e8f1fc; border-radius: 3px; padding: 2px 8px; margin-right: 6px; }
+.card-grid a {
+  display: block; padding: 16px;
+  background: var(--surface); border: 1px solid var(--line); border-radius: 8px; color: var(--ink);
+}
+.card-grid a:hover { border-color: var(--accent); text-decoration: none; }
+.card-grid strong {
+  display: block; font-family: "Cormorant Garamond", Georgia, "Times New Roman", serif;
+  font-size: 20px; font-weight: 700; margin-bottom: 2px;
+}
+.card-grid span { font-size: 15px; color: var(--muted); }
+.tag {
+  display: inline-block; font-size: 13px; font-weight: 600;
+  color: var(--accent-ink); background: var(--accent-soft);
+  border-radius: 3px; padding: 2px 8px; margin-right: 6px;
+}
