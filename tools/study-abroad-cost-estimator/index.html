@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Study Abroad Cost Estimator - StudyKoro</title>
+<meta name="description" content="Estimate your first-year cost of studying abroad — tuition, living, visa, insurance and flights." />
+<link rel="canonical" href="https://studykoro.me/tools/study-abroad-cost-estimator/" />
+<meta name="robots" content="index, follow" />
+<meta property="og:site_name" content="StudyKoro" />
+<meta property="og:locale" content="en-US" />
+<meta property="og:type" content="website" />
+<meta property="og:title" content="Study Abroad Cost Estimator" />
+<meta property="og:description" content="Estimate your first-year cost of studying abroad — tuition, living, visa, insurance and flights." />
+<meta property="og:url" content="https://studykoro.me/tools/study-abroad-cost-estimator/" />
+<meta name="twitter:card" content="summary" />
+<meta name="twitter:title" content="Study Abroad Cost Estimator" />
+<meta name="twitter:description" content="Estimate your first-year cost of studying abroad — tuition, living, visa, insurance and flights." />
+<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-4767340377459265" crossorigin="anonymous"></script>
+<link rel="stylesheet" href="/assets/style.css" />
+<link rel="icon" href="/assets/favicon.svg" type="image/svg+xml" />
+</head>
+<body>
+<header class="site-header">
+<div class="wrap">
+<a class="brand" href="/">StudyKoro</a>
+<p class="tagline">Your guide to studying abroad from Bangladesh</p>
+<nav aria-label="Primary">
+<a href="/">Home</a>
+<a href="/countries/">Countries</a>
+<a href="/scholarships/">Scholarships</a>
+<a href="/admissions/">Admissions</a>
+<a href="/visas/">Visas</a>
+<a href="/costs/">Costs</a>
+<a href="/tools/">Tools</a>
+<a href="/about/">About</a>
+</nav>
+</div>
+</header>
+<main class="wrap">
+<h1>Study Abroad Cost Estimator</h1>
+<p>Estimate your first-year cost of studying abroad. Pick a country — the fields fill with typical figures — then replace them with your university's actual fees and see the total in the original currency and in approximate BDT.</p>
+<div id="cost-tool">
+<label for="cost-country">Country</label>
+<select id="cost-country"></select>
+<label for="cost-tuition">Tuition per year</label>
+<input type="number" id="cost-tuition" min="0" step="1" placeholder="e.g. 30000">
+<label for="cost-living">Living cost per month</label>
+<input type="number" id="cost-living" min="0" step="1" placeholder="e.g. 1200">
+<label for="cost-visa">Visa fee (one-off)</label>
+<input type="number" id="cost-visa" min="0" step="1" placeholder="e.g. 535">
+<label for="cost-insurance">Health insurance per year</label>
+<input type="number" id="cost-insurance" min="0" step="1" placeholder="e.g. 2000">
+<label for="cost-flights">Return flights from Dhaka</label>
+<input type="number" id="cost-flights" min="0" step="1" placeholder="e.g. 1200">
+<button type="button" id="cost-calc">Calculate first-year cost</button>
+<div id="cost-result" class="result" aria-live="polite"></div>
+<p class="sk-result-note" id="cost-notes"></p>
+</div>
+
+<h2>What the defaults mean</h2>
+<p>Defaults are typical starting points, not quotes. Tuition is a mid-range figure — your offer letter is the real number. Living cost uses the official visa proof figure where one exists (UK, Canada, Australia, Germany); for the USA, Japan, China and Malaysia it is a typical estimate. For the UK, the visa field includes the £558 application fee plus one year of the Immigration Health Surcharge (£776). For Germany, health insurance is counted inside the €992-a-month living figure, so the insurance field is 0. For Japan, China and Malaysia the visa fee varies by nationality, so the field starts at 0 — check the embassy and type in the real fee.</p>
+<p>BDT totals use mid-market exchange rates of 19 November 2026 (USD ৳124.50, GBP ৳163.50, CAD ৳87.00, AUD ৳83.50, EUR ৳136.80, JPY ৳0.78, CNY ৳18.70, MYR ৳30.25). Rates move daily — the BDT figure is approximate. See the full comparison in <a href="/costs/compare/">Cost of Studying Abroad Compared</a>.</p>
+<script>
+(function () {
+  var root = document.getElementById('cost-tool');
+  if (!root) return;
+
+  var COUNTRIES = {
+    usa: { name: 'USA', currency: 'USD', symbol: '$', rate: 124.5, tuition: 30000, living: 1200, visa: 535, insurance: 2000, flights: 1200, note: 'Visa fee is SEVIS $350 + MRV $185. The $250 Visa Integrity Fee is being phased in and is not included — budget for it separately.' },
+    uk: { name: 'UK', currency: 'GBP', symbol: '£', rate: 163.5, tuition: 18000, living: 1300, visa: 1334, insurance: 0, flights: 700, note: 'Visa field includes the £558 application fee + one year of the Immigration Health Surcharge (£776). Maintenance money (£1,529/month London, £1,171 elsewhere) is separate proof, not a fee.' },
+    canada: { name: 'Canada', currency: 'CAD', symbol: 'CAD $', rate: 87, tuition: 25000, living: 1950, visa: 235, insurance: 800, flights: 1100, note: 'Visa fee is the CAD $150 study permit + CAD $85 biometrics. Living cost is the official proof figure, CAD $23,448 a year.' },
+    australia: { name: 'Australia', currency: 'AUD', symbol: 'AUD $', rate: 83.5, tuition: 32000, living: 2475, visa: 2500, insurance: 650, flights: 1000, note: 'Visa charge is AUD $2,500 from 1 July 2026. Living cost is the official proof figure, AUD $29,710 a year. Insurance is an OSHC estimate — check your provider.' },
+    germany: { name: 'Germany', currency: 'EUR', symbol: '€', rate: 136.8, tuition: 300, living: 992, visa: 75, insurance: 0, flights: 800, note: 'Tuition is the semester contribution (~€300/year at most public universities). Health insurance (~€120/month) is counted inside the €992/month living figure. You must also hold €11,904 in a blocked account before the visa.' },
+    japan: { name: 'Japan', currency: 'JPY', symbol: '¥', rate: 0.78, tuition: 535800, living: 120000, visa: 0, insurance: 24000, flights: 60000, note: 'Tuition is the standard national university rate. Add the one-time ¥282,000 admission fee in your first year. The visa fee varies by nationality — check the Embassy of Japan in Dhaka.' },
+    china: { name: 'China', currency: 'CNY', symbol: '¥', rate: 18.7, tuition: 30000, living: 3000, visa: 0, insurance: 800, flights: 4000, note: 'Tuition and living costs are typical ranges. The visa fee varies by nationality — check the Chinese Embassy in Dhaka.' },
+    malaysia: { name: 'Malaysia', currency: 'MYR', symbol: 'RM ', rate: 30.25, tuition: 30000, living: 2000, visa: 0, insurance: 500, flights: 1500, note: 'Tuition and living costs are typical ranges. The visa fee varies by nationality — check the Malaysian High Commission in Dhaka.' }
+  };
+
+  var countryEl = document.getElementById('cost-country');
+  var tuitionEl = document.getElementById('cost-tuition');
+  var livingEl = document.getElementById('cost-living');
+  var visaEl = document.getElementById('cost-visa');
+  var insuranceEl = document.getElementById('cost-insurance');
+  var flightsEl = document.getElementById('cost-flights');
+  var calcEl = document.getElementById('cost-calc');
+  var resultEl = document.getElementById('cost-result');
+  var notesEl = document.getElementById('cost-notes');
+
+  var options = [];
+  Object.keys(COUNTRIES).forEach(function (key) {
+    options.push('<option value="' + key + '">' + COUNTRIES[key].name + ' (' + COUNTRIES[key].currency + ')</option>');
+  });
+  countryEl.innerHTML = options.join('');
+
+  function num(el) {
+    var v = parseFloat(el.value);
+    return isNaN(v) || v < 0 ? 0 : v;
+  }
+
+  function fmt(n) {
+    return Math.round(n).toLocaleString('en-US');
+  }
+
+  function lakh(n) {
+    return (n / 100000).toFixed(1);
+  }
+
+  function fillDefaults() {
+    var c = COUNTRIES[countryEl.value];
+    if (!c) return;
+    tuitionEl.value = c.tuition;
+    livingEl.value = c.living;
+    visaEl.value = c.visa;
+    insuranceEl.value = c.insurance;
+    flightsEl.value = c.flights;
+    notesEl.textContent = c.note;
+    resultEl.innerHTML = '';
+  }
+
+  function calculate() {
+    var c = COUNTRIES[countryEl.value];
+    if (!c) return;
+    var tuition = num(tuitionEl);
+    var livingYear = num(livingEl) * 12;
+    var visa = num(visaEl);
+    var insurance = num(insuranceEl);
+    var flights = num(flightsEl);
+    var total = tuition + livingYear + visa + insurance + flights;
+    var bdt = total * c.rate;
+
+    resultEl.innerHTML =
+      '<div class="sk-result"><p class="sk-result-label">First-year total — ' + c.name + '</p>' +
+      '<p class="sk-result-value">' + c.symbol + fmt(total) + ' ' + c.currency + '</p>' +
+      '<p class="sk-result-note">About ৳' + fmt(bdt) + ' (roughly ৳' + lakh(bdt) + ' lakh) at the 19 Nov 2026 mid-market rate of ' + c.rate + ' BDT per ' + c.currency + ' — approximate.</p>' +
+      '<p class="sk-result-note">Tuition ' + c.symbol + fmt(tuition) + ' + living ' + c.symbol + fmt(livingYear) + ' (12 months) + visa ' + c.symbol + fmt(visa) + ' + insurance ' + c.symbol + fmt(insurance) + ' + flights ' + c.symbol + fmt(flights) + '</p>' +
+      '<p class="sk-result-note">This is a planning estimate. Confirm tuition on your offer letter and fees on the official source before you pay anything.</p></div>';
+  }
+
+  countryEl.addEventListener('change', fillDefaults);
+  calcEl.addEventListener('click', calculate);
+  fillDefaults();
+})();
+</script>
+</main>
+<footer class="site-footer">
+<div class="wrap">
+<p>&copy; StudyKoro. All rights reserved.</p>
+<nav aria-label="Footer">
+<a href="/about/">About</a>
+<a href="/contact/">Contact</a>
+<a href="/privacy-policy/">Privacy Policy</a>
+<a href="/disclaimer/">Disclaimer</a>
+<a href="/terms/">Terms</a>
+</nav>
+</div>
+</footer>
+</body>
+</html>
