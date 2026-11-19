@@ -72,6 +72,7 @@ button:hover, input[type="submit"]:hover { background: #134a8c; }
 .sk-ok { color: #1a7f37; }
 .sk-bad { color: #b3261e; }
 .sk-value { font-weight: 600; }
+.sk-subject { font-weight: 600; }
 .sk-remove { background: none; color: #b3261e; padding: 4px 8px; margin: 0; font-size: 14px; }
 .sk-remove:hover { background: #fdecea; }
 

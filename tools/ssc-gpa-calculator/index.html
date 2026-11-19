@@ -39,157 +39,74 @@
 </header>
 <main class="wrap">
 <h1>SSC GPA Calculator</h1>
-<p>Calculate your SSC GPA for Science, Commerce, and Arts groups across all Bangladesh education boards. Uses official grading rules.</p>
+<p>Calculate your SSC GPA for Science, Commerce, and Arts across all Bangladesh education boards — using the board's own formula, including the 4th-subject bonus. Enter a letter grade or marks for each subject.</p>
 <div id="ssc-tool">
 <div>
 <label for="ssc-group">Group</label>
 <select id="ssc-group"><option value="science">Science</option><option value="commerce">Commerce</option><option value="arts">Arts / Humanities</option></select>
-<label for="ssc-mode">Entry mode</label>
-<select id="ssc-mode"><option value="grade">Letter grade</option><option value="marks">Marks (0-100)</option></select>
 </div>
-<p><strong>Core subjects</strong></p>
+<p><strong>Core subjects (9)</strong></p>
 <div id="ssc-subjects"></div>
 <p><strong>4th subject (bonus)</strong></p>
-<p>Grade points above C (2.00) in the 4th subject are added to your total, up to a maximum GPA of 5.00.</p>
-<div id="ssc-extras"></div>
+<p>Only the grade points above C (2.00) in your 4th subject are added as a bonus. A low grade there never lowers your GPA.</p>
+<label for="ssc-fourth">4th subject</label>
+<select id="ssc-fourth"></select>
+<div id="ssc-fourth-inputs"></div>
 <p><button type="button" id="ssc-calc">Calculate GPA</button> <button type="button" id="ssc-reset">Reset</button></p>
 <div id="ssc-result" class="result" aria-live="polite"></div>
 </div>
+<script src="/assets/calc.js"></script>
 <script>
-(() => {
-  const root = document.getElementById('ssc-tool');
-  if (!root) return;
-
-  const GROUPS = {
-    science: ['Bangla', 'English', 'Math', 'Religion', 'ICT', 'Bangladesh & Global Studies', 'Physics', 'Chemistry'],
-    commerce: ['Bangla', 'English', 'Math', 'Religion', 'ICT', 'General Science', 'Accounting', 'Business Entrepreneurship', 'Finance'],
-    arts: ['Bangla', 'English', 'Math', 'Religion', 'ICT', 'General Science', 'History', 'Geography', 'Civics']
-  };
-  const FOURTH = {
-    science: ['Biology', 'Higher Math'],
-    commerce: ['Accounting', 'Business Entrepreneurship', 'Finance'],
-    arts: ['History', 'Geography', 'Civics']
-  };
-  const GRADES = [
-    { label: 'A+ (5.00)', value: 5 },
-    { label: 'A (4.00)', value: 4 },
-    { label: 'A- (3.50)', value: 3.5 },
-    { label: 'B (3.00)', value: 3 },
-    { label: 'C (2.00)', value: 2 },
-    { label: 'D (1.00)', value: 1 },
-    { label: 'F (0.00)', value: 0 }
-  ];
-
-  // Bangladesh SSC grading scale (marks out of 100).
-  const marksToPoint = (m) => {
-    if (m >= 80) return 5;
-    if (m >= 70) return 4;
-    if (m >= 60) return 3.5;
-    if (m >= 50) return 3;
-    if (m >= 40) return 2;
-    if (m >= 33) return 1;
-    return 0;
-  };
-
-  const groupEl = document.getElementById('ssc-group');
-  const modeEl = document.getElementById('ssc-mode');
-  const subjectsEl = document.getElementById('ssc-subjects');
-  const extrasEl = document.getElementById('ssc-extras');
-  const resultEl = document.getElementById('ssc-result');
-
-  function valueInput(id, label) {
-    const wrap = document.createElement('div');
-    wrap.className = 'sk-field';
-    const lab = document.createElement('label');
-    lab.setAttribute('for', id);
-    lab.textContent = label;
-    wrap.appendChild(lab);
-    let field;
-    if (modeEl.value === 'grade') {
-      field = document.createElement('select');
-      field.innerHTML = '<option value="">Select grade</option>' +
-        GRADES.map((g) => `<option value="${g.value}">${g.label}</option>`).join('');
-    } else {
-      field = document.createElement('input');
-      field.type = 'number';
-      field.min = '0';
-      field.max = '100';
-      field.step = '0.01';
-      field.placeholder = 'Marks 0-100';
+Calc.gpaTool({
+  rootId: 'ssc-tool', groupId: 'ssc-group', subjectsId: 'ssc-subjects',
+  fourthId: 'ssc-fourth', fourthInputsId: 'ssc-fourth-inputs',
+  calcId: 'ssc-calc', resetId: 'ssc-reset', resultId: 'ssc-result',
+  coreCount: 9,
+  subjectWord: 'core subject',
+  marksMax: function () { return 100; },
+  groups: {
+    science: {
+      fixed: ['Bangla', 'English', 'Math', 'Religion', 'ICT', 'Bangladesh & Global Studies', 'Physics', 'Chemistry'],
+      pickers: [{ options: ['Biology', 'Higher Math'] }],
+      fourthBase: ['Agriculture', 'Home Science'],
+      fourthFromPickers: true
+    },
+    commerce: {
+      fixed: ['Bangla', 'English', 'Math', 'Religion', 'ICT', 'General Science', 'Accounting', 'Finance & Banking', 'Business Entrepreneurship'],
+      pickers: [],
+      fourthBase: ['Agriculture', 'Home Science'],
+      fourthFromPickers: false
+    },
+    arts: {
+      fixed: ['Bangla', 'English', 'Math', 'Religion', 'ICT', 'General Science'],
+      pickers: [
+        { options: ['History', 'Geography', 'Civics', 'Economics'] },
+        { options: ['History', 'Geography', 'Civics', 'Economics'] },
+        { options: ['History', 'Geography', 'Civics', 'Economics'] }
+      ],
+      fourthBase: ['Agriculture', 'Home Science'],
+      fourthFromPickers: true
     }
-    field.id = id;
-    field.className = 'sk-value';
-    wrap.appendChild(field);
-    return wrap;
   }
-
-  // null = not entered yet (an empty field is not a grade, and never an F).
-  function pointOf(el) {
-    if (el.value === '') return null;
-    const num = parseFloat(el.value);
-    if (Number.isNaN(num)) return null;
-    return modeEl.value === 'grade' ? num : marksToPoint(num);
-  }
-
-  function render() {
-    const group = groupEl.value;
-    subjectsEl.innerHTML = '';
-    GROUPS[group].forEach((name, i) => {
-      subjectsEl.appendChild(valueInput(`ssc-sub-${i}`, name));
-    });
-
-    extrasEl.innerHTML = '';
-    const select = document.createElement('div');
-    select.className = 'sk-field';
-    select.innerHTML = '<label for="ssc-fourth">4th subject</label><select id="ssc-fourth">' +
-      FOURTH[group].map((s) => `<option>${s}</option>`).join('') + '</select>';
-    extrasEl.appendChild(select);
-    extrasEl.appendChild(valueInput('ssc-fourth-value', '4th subject result'));
-    resultEl.innerHTML = '';
-  }
-
-  // showHint: the Calculate button explains what is missing; live updates stay quiet.
-  function calculate(showHint = true) {
-    const fields = [...subjectsEl.querySelectorAll('.sk-value')];
-    const points = fields.map(pointOf);
-    if (points.some((p) => p === null)) {
-      resultEl.innerHTML = showHint
-        ? '<p class="sk-msg">Fill in every core subject first — an empty field is not a grade.</p>'
-        : '';
-      return;
-    }
-    const failed = points.some((p) => p === 0);
-    const total = points.reduce((a, b) => a + b, 0);
-    const fourthEl = document.getElementById('ssc-fourth-value');
-    const fourth = fourthEl ? pointOf(fourthEl) : null;
-    const bonus = fourth !== null && fourth > 2 ? fourth - 2 : 0;
-    let gpa = (total + bonus) / points.length;
-    if (gpa > 5) gpa = 5;
-    if (failed) gpa = 0;
-
-    const status = failed
-      ? '<span class="sk-bad">Failed - an F in any subject makes the overall GPA 0.00</span>'
-      : (gpa >= 5 ? '<span class="sk-ok">Golden A+</span>' : '<span class="sk-ok">Passed</span>');
-
-    resultEl.innerHTML =
-      '<div class="sk-result"><p class="sk-result-label">Your SSC GPA</p>' +
-      `<p class="sk-result-value">${gpa.toFixed(2)}</p>` +
-      `<p class="sk-result-note">${status}</p>` +
-      `<p class="sk-result-note">Total grade points: ${total.toFixed(2)} - 4th subject bonus: ${bonus.toFixed(2)}</p></div>`;
-  }
-
-  groupEl.addEventListener('change', render);
-  modeEl.addEventListener('change', render);
-  document.getElementById('ssc-calc').addEventListener('click', () => calculate());
-  document.getElementById('ssc-reset').addEventListener('click', render);
-  // Live result once every field is filled; quiet until then.
-  subjectsEl.addEventListener('input', () => calculate(false));
-  subjectsEl.addEventListener('change', () => calculate(false));
-  extrasEl.addEventListener('input', () => calculate(false));
-  extrasEl.addEventListener('change', () => calculate(false));
-  render();
-})();
+});
 </script>
+<blockquote><p><strong>Note:</strong> This calculator provides an estimate based on the Bangladesh SSC grading system. Your official GPA is the result shown on the marksheet issued by the relevant education board.</p></blockquote>
+<h2>How SSC GPA is calculated</h2>
+<p>SSC uses a <strong>5.00-point scale</strong>. Each subject's marks become a letter grade and a grade point:</p>
+<table><thead><tr><th align="right">Marks</th><th align="center">Letter Grade</th><th align="right">Grade Point</th></tr></thead><tbody><tr><td align="right">80–100</td><td align="center">A+</td><td align="right">5.00</td></tr><tr><td align="right">70–79</td><td align="center">A</td><td align="right">4.00</td></tr><tr><td align="right">60–69</td><td align="center">A−</td><td align="right">3.50</td></tr><tr><td align="right">50–59</td><td align="center">B</td><td align="right">3.00</td></tr><tr><td align="right">40–49</td><td align="center">C</td><td align="right">2.00</td></tr><tr><td align="right">33–39</td><td align="center">D</td><td align="right">1.00</td></tr><tr><td align="right">0–32</td><td align="center">F</td><td align="right">0.00</td></tr></tbody></table>
+<p>The formula is: <strong>GPA = (grade points of the 9 core subjects + 4th-subject bonus) ÷ 9</strong>, capped at 5.00. The 4th subject is never in the divisor — only its bonus counts.</p>
+<h3>Worked example</h3>
+<p>A Science student with these core grades — Bangla A+ (5), English A (4), Math A+ (5), Religion A+ (5), ICT A (4), Bangladesh &amp; Global Studies A+ (5), Physics A (4), Chemistry A+ (5), Biology A (4) — has a core total of 41. Without a 4th subject: 41 ÷ 9 = <strong>4.56</strong>.</p>
+<p>With an A+ in Higher Math as the 4th subject, the bonus is 5.00 − 2.00 = 3.00, so (41 + 3.00) ÷ 9 = <strong>4.89</strong>.</p>
+<h2>The 4th-subject bonus</h2>
+<p>Only the part of your 4th subject's grade point above 2.00 counts as a bonus:</p>
+<ul><li>A+ (5.00) → +3.00 bonus</li><li>A (4.00) → +2.00 bonus</li><li>A− (3.50) → +1.50 bonus</li><li>B (3.00) → +1.00 bonus</li><li>C (2.00) or below → no bonus</li></ul>
+<p>The 4th subject can only help. A low grade there never lowers your GPA, and an F in it does not fail you — it simply adds no bonus.</p>
+<h2>If you get an F</h2>
+<p>An F is a grade point of 0.00, and an F in any core subject makes the overall GPA 0.00. Your official result and the board's rules determine what happens next — check your official SSC result rather than relying on a GPA calculation alone.</p>
+<h2>Is this calculator official?</h2>
+<p>No. This is an educational calculator for estimating your GPA from your marks or grades. It is not an official Bangladesh Education Board result service. Your official SSC GPA is the result issued by your relevant education board and shown on your official marksheet — if the two differ, the board result is authoritative.</p>
+<p><strong>Last reviewed: November 2026</strong></p>
 </main>
 <footer class="site-footer">
 <div class="wrap">

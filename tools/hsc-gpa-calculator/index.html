@@ -39,12 +39,13 @@
 </header>
 <main class="wrap">
 <h1>HSC GPA Calculator</h1>
-<p>Calculate your HSC GPA online using your subject marks or letter grades. This free HSC GPA Calculator supports <strong>Science, Business Studies, and Humanities</strong> students in Bangladesh and automatically applies the applicable <strong>4th-subject bonus</strong>.</p><p>Enter your marks or grades below to get your estimated GPA.</p><div id="hsc-tool">
+<p>Calculate your HSC GPA online using your subject marks or letter grades. This free HSC GPA Calculator supports <strong>Science, Business Studies, and Humanities</strong> students in Bangladesh and automatically applies the applicable <strong>4th-subject bonus</strong>.</p><p>Enter your marks or grades below to get your estimated GPA.</p>
+<div id="hsc-tool">
 <div>
 <label for="hsc-group">Group</label>
 <select id="hsc-group"><option value="science">Science</option><option value="business">Business Studies</option><option value="humanities">Humanities</option></select>
 </div>
-<p><strong>Main subjects</strong></p>
+<p><strong>Main subjects (6)</strong></p>
 <p>Enter a letter grade OR marks. Marks fields take the total out of 200 (out of 100 for ICT).</p>
 <div id="hsc-subjects"></div>
 <p><strong>Optional subject (4th subject bonus)</strong></p>
@@ -54,189 +55,66 @@
 <p><button type="button" id="hsc-calc">Calculate GPA</button> <button type="button" id="hsc-reset">Reset</button></p>
 <div id="hsc-result" class="result" aria-live="polite"></div>
 </div>
+<script src="/assets/calc.js"></script>
 <script>
-(() => {
-  const root = document.getElementById('hsc-tool');
-  if (!root) return;
-
-  const GROUPS = {
+Calc.gpaTool({
+  rootId: 'hsc-tool', groupId: 'hsc-group', subjectsId: 'hsc-subjects',
+  fourthId: 'hsc-optional', fourthInputsId: 'hsc-optional-inputs',
+  calcId: 'hsc-calc', resetId: 'hsc-reset', resultId: 'hsc-result',
+  coreCount: 6,
+  subjectWord: 'main subject',
+  marksMax: function (subject) {
+    return subject.toLowerCase().indexOf('ict') !== -1 ? 100 : 200;
+  },
+  groups: {
     science: {
-      main: ['Bangla', 'English', 'ICT', 'Physics', 'Chemistry', 'Biology / Math'],
-      optional: ['Biology', 'Agriculture', 'Higher Math', 'Computer Science', 'Engineering Drawing', 'Fine Arts']
+      fixed: ['Bangla', 'English', 'ICT', 'Physics', 'Chemistry'],
+      pickers: [{ options: ['Biology', 'Higher Math'] }],
+      fourthBase: ['Agriculture', 'Computer Science', 'Engineering Drawing', 'Fine Arts'],
+      fourthFromPickers: true
     },
     business: {
-      main: ['Bangla', 'English', 'ICT', 'Accounting', 'Business Organization & Management', 'Finance, Banking & Insurance'],
-      optional: ['Marketing', 'Cooperative', 'Production Management & Entrepreneurship', 'Higher Math', 'Computer Science', 'Fine Arts']
+      fixed: ['Bangla', 'English', 'ICT', 'Accounting', 'Business Organization & Management', 'Finance, Banking & Insurance'],
+      pickers: [],
+      fourthBase: ['Marketing', 'Cooperative', 'Production Management & Entrepreneurship', 'Higher Math', 'Computer Science', 'Fine Arts'],
+      fourthFromPickers: false
     },
     humanities: {
-      main: ['Bangla', 'English', 'ICT', 'Civics & Good Governance', 'History of Bangladesh & World Civilization', 'Geography & Environment'],
-      optional: ['Psychology', 'Sociology', 'Logic', 'Higher Math', 'Computer Science', 'Fine Arts']
+      fixed: ['Bangla', 'English', 'ICT'],
+      pickers: [
+        { options: ['Civics & Good Governance', 'History of Bangladesh & World Civilization', 'Geography & Environment', 'Economics', 'Logic', 'Psychology', 'Sociology', 'Social Work'] },
+        { options: ['Civics & Good Governance', 'History of Bangladesh & World Civilization', 'Geography & Environment', 'Economics', 'Logic', 'Psychology', 'Sociology', 'Social Work'] },
+        { options: ['Civics & Good Governance', 'History of Bangladesh & World Civilization', 'Geography & Environment', 'Economics', 'Logic', 'Psychology', 'Sociology', 'Social Work'] }
+      ],
+      fourthBase: ['Higher Math', 'Computer Science', 'Fine Arts'],
+      fourthFromPickers: true
     }
-  };
-  const GRADES = [
-    { label: 'A+ (5.00)', value: 5 },
-    { label: 'A (4.00)', value: 4 },
-    { label: 'A- (3.50)', value: 3.5 },
-    { label: 'B (3.00)', value: 3 },
-    { label: 'C (2.00)', value: 2 },
-    { label: 'D (1.00)', value: 1 },
-    { label: 'F (0.00)', value: 0 }
-  ];
-
-  // Bangladesh HSC grading scale. Marks are out of 100 per paper; most subjects
-  // are two papers (200 total), ICT is one paper (100).
-  const marksToPoint = (m) => {
-    if (m >= 80) return 5;
-    if (m >= 70) return 4;
-    if (m >= 60) return 3.5;
-    if (m >= 50) return 3;
-    if (m >= 40) return 2;
-    if (m >= 33) return 1;
-    return 0;
-  };
-
-  const groupEl = document.getElementById('hsc-group');
-  const subjectsEl = document.getElementById('hsc-subjects');
-  const optionalEl = document.getElementById('hsc-optional');
-  const optionalInputsEl = document.getElementById('hsc-optional-inputs');
-  const resultEl = document.getElementById('hsc-result');
-
-  const gradeSelect = (id, label) =>
-    `<select id="${id}" aria-label="${label}"><option value="">Select grade</option>` +
-    GRADES.map((g) => `<option value="${g.value}">${g.label}</option>`).join('') +
-    '</select>';
-
-  // NaN = not entered yet (an empty field is not a grade, and never an F).
-  function pointFor(gradeEl, marksEl, subject) {
-    if (gradeEl.value !== '') return parseFloat(gradeEl.value);
-    if (marksEl.value !== '') {
-      const marks = parseFloat(marksEl.value);
-      if (Number.isNaN(marks)) return NaN;
-      const scaled = subject.toLowerCase().includes('ict') ? marks : marks / 2;
-      return marksToPoint(scaled);
-    }
-    return NaN;
   }
-
-  function render() {
-    const group = GROUPS[groupEl.value];
-    subjectsEl.innerHTML = group.main.map((name, i) => {
-      const max = name.toLowerCase().includes('ict') ? 100 : 200;
-      return `<div class="sk-row" data-subject="${name}">` +
-        `<label for="hsc-grade-${i}">${name}</label>` +
-        gradeSelect(`hsc-grade-${i}`, `${name} grade`) +
-        `<input type="number" id="hsc-marks-${i}" min="0" max="${max}" placeholder="Marks 0-${max}" aria-label="${name} marks">` +
-        '</div>';
-    }).join('');
-
-    optionalEl.innerHTML = '<option value="">Select optional subject (skip if none)</option>' +
-      group.optional.map((s) => `<option>${s}</option>`).join('');
-    optionalInputsEl.innerHTML = '';
-    resultEl.innerHTML = '';
-
-    subjectsEl.querySelectorAll('select').forEach((sel) => {
-      sel.addEventListener('change', () => {
-        const marks = sel.parentNode.querySelector('input');
-        if (sel.value !== '') marks.value = '';
-      });
-    });
-    subjectsEl.querySelectorAll('input').forEach((inp) => {
-      inp.addEventListener('input', () => {
-        const sel = inp.parentNode.querySelector('select');
-        if (inp.value !== '') sel.value = '';
-      });
-    });
-  }
-
-  function renderOptionalInputs() {
-    if (!optionalEl.value) { optionalInputsEl.innerHTML = ''; return; }
-    optionalInputsEl.innerHTML =
-      `<div class="sk-field">${gradeSelect('hsc-opt-grade', 'Optional subject grade')}</div>` +
-      '<div class="sk-field"><input type="number" id="hsc-opt-marks" min="0" max="200" placeholder="Marks 0-200" aria-label="Optional subject marks"></div>';
-    const sel = document.getElementById('hsc-opt-grade');
-    const inp = document.getElementById('hsc-opt-marks');
-    sel.addEventListener('change', () => { if (sel.value !== '') inp.value = ''; });
-    inp.addEventListener('input', () => { if (inp.value !== '') sel.value = ''; });
-  }
-
-  // showHint: the Calculate button explains what is missing; live updates stay quiet.
-  function calculate(showHint = true) {
-    const rows = [...subjectsEl.querySelectorAll('.sk-row')];
-    let total = 0;
-    let count = 0;
-    let failed = false;
-
-    for (const row of rows) {
-      const subject = row.getAttribute('data-subject');
-      const point = pointFor(row.querySelector('select'), row.querySelector('input'), subject);
-      if (Number.isNaN(point)) continue;
-      if (point === 0) failed = true;
-      total += point;
-      count += 1;
-    }
-
-    // The GPA is calculated over all main subjects — a partial entry is not a GPA.
-    if (count < rows.length) {
-      resultEl.innerHTML = showHint
-        ? '<p class="sk-msg">Fill in every main subject — enter a grade or marks for each one. If your combination differs, enter that subject’s grade in the closest slot.</p>'
-        : '';
-      return;
-    }
-
-    let bonus = 0;
-    if (optionalEl.value) {
-      const optPoint = pointFor(
-        document.getElementById('hsc-opt-grade'),
-        document.getElementById('hsc-opt-marks'),
-        optionalEl.value
-      );
-      if (!Number.isNaN(optPoint)) bonus = optPoint > 2 ? (optPoint - 2) / 2 : 0;
-    }
-
-    const gpa = Math.min((total + bonus) / count, failed ? 0 : 5);
-    resultEl.innerHTML =
-      '<div class="sk-result"><p class="sk-result-label">Your HSC GPA</p>' +
-      `<p class="sk-result-value">${failed ? '0.00' : gpa.toFixed(2)}</p>` +
-      (failed ? '<p class="sk-result-note"><span class="sk-bad">An F in any subject makes the overall GPA 0.00</span></p>' : '') +
-      (bonus > 0 && !failed ? `<p class="sk-result-note">Includes 4th-subject bonus: +${bonus.toFixed(2)}</p>` : '') +
-      '</div>';
-  }
-
-  groupEl.addEventListener('change', () => { render(); renderOptionalInputs(); });
-  optionalEl.addEventListener('change', renderOptionalInputs);
-  document.getElementById('hsc-calc').addEventListener('click', () => calculate());
-  document.getElementById('hsc-reset').addEventListener('click', () => { render(); renderOptionalInputs(); });
-  // Live result once every field is filled; quiet until then.
-  subjectsEl.addEventListener('input', () => calculate(false));
-  subjectsEl.addEventListener('change', () => calculate(false));
-  optionalInputsEl.addEventListener('input', () => calculate(false));
-  optionalInputsEl.addEventListener('change', () => calculate(false));
-  render();
-})();
+});
 </script>
 <blockquote><p><strong>Note:</strong> This calculator provides an estimate based on the Bangladesh HSC grading system. Your official GPA is the result shown on the marksheet issued by the relevant education board.</p></blockquote>
 <h2>How HSC GPA is calculated</h2>
-<p>Bangladesh's HSC grading system uses a <strong>5.00-point scale</strong>. Each subject's marks become a letter grade and a grade point:</p>
-<table><thead><tr><th align="right">Marks</th><th align="center">Letter Grade</th><th align="right">Grade Point</th></tr></thead><tbody><tr><td align="right">80–100</td><td align="center">A+</td><td align="right">5.00</td></tr><tr><td align="right">70–79</td><td align="center">A</td><td align="right">4.00</td></tr><tr><td align="right">60–69</td><td align="center">A−</td><td align="right">3.50</td></tr><tr><td align="right">50–59</td><td align="center">B</td><td align="right">3.00</td></tr><tr><td align="right">40–49</td><td align="center">C</td><td align="right">2.00</td></tr><tr><td align="right">33–39</td><td align="center">D</td><td align="right">1.00</td></tr><tr><td align="right">0–32</td><td align="center">F</td><td align="right">0.00</td></tr></tbody></table>
-<p>The GPA is the average of your main subjects' grade points, plus the 4th-subject bonus if you have one.</p>
+<p>Bangladesh's HSC grading system uses a <strong>5.00-point scale</strong>. Each subject's marks become a letter grade and a grade point. Most subjects are two papers (200 marks); ICT is one paper (100 marks):</p>
+<table><thead><tr><th align="right">Marks (out of 100)</th><th align="center">Letter Grade</th><th align="right">Grade Point</th></tr></thead><tbody><tr><td align="right">80–100</td><td align="center">A+</td><td align="right">5.00</td></tr><tr><td align="right">70–79</td><td align="center">A</td><td align="right">4.00</td></tr><tr><td align="right">60–69</td><td align="center">A−</td><td align="right">3.50</td></tr><tr><td align="right">50–59</td><td align="center">B</td><td align="right">3.00</td></tr><tr><td align="right">40–49</td><td align="center">C</td><td align="right">2.00</td></tr><tr><td align="right">33–39</td><td align="center">D</td><td align="right">1.00</td></tr><tr><td align="right">0–32</td><td align="center">F</td><td align="right">0.00</td></tr></tbody></table>
+<p>The formula is: <strong>GPA = (grade points of the 6 main subjects + 4th-subject bonus) ÷ 6</strong>, capped at 5.00. The 4th subject is never in the divisor — only its bonus counts.</p>
 <h3>Worked example</h3>
 <table><thead><tr><th>Subject</th><th align="right">Grade</th><th align="right">Grade Point</th></tr></thead><tbody><tr><td>Bangla</td><td align="right">A+</td><td align="right">5.00</td></tr><tr><td>English</td><td align="right">A</td><td align="right">4.00</td></tr><tr><td>ICT</td><td align="right">A+</td><td align="right">5.00</td></tr><tr><td>Physics</td><td align="right">A+</td><td align="right">5.00</td></tr><tr><td>Chemistry</td><td align="right">A</td><td align="right">4.00</td></tr><tr><td>Biology</td><td align="right">A+</td><td align="right">5.00</td></tr></tbody></table>
-<p>Main subjects total 28 ÷ 6 = <strong>4.67</strong>. With an A+ in the 4th subject, the bonus is (5.00 − 2.00) ÷ 2 = 1.50, so (28 + 1.50) ÷ 6 = <strong>4.92</strong>.</p>
+<p>Main subjects total 28 ÷ 6 = <strong>4.67</strong>. With an A+ in the 4th subject, the bonus is 5.00 − 2.00 = 3.00, so (28 + 3.00) ÷ 6 = 5.17, capped at <strong>5.00</strong>.</p>
 <h2>The 4th-subject bonus</h2>
-<p>The optional (4th) subject is treated differently. If its grade point is above 2.00, <strong>half of the excess</strong> counts as a bonus:</p>
-<ul><li>A+ (5.00) → +1.50 bonus</li><li>A (4.00) → +1.00 bonus</li><li>A− (3.50) → +0.75 bonus</li><li>B (3.00) → +0.50 bonus</li><li>C (2.00) or below → no bonus</li></ul>
-<p>The calculator applies the bonus automatically — enter your optional subject separately and it is included.</p>
+<p>Only the part of your 4th subject's grade point above 2.00 counts as a bonus:</p>
+<ul><li>A+ (5.00) → +3.00 bonus</li><li>A (4.00) → +2.00 bonus</li><li>A− (3.50) → +1.50 bonus</li><li>B (3.00) → +1.00 bonus</li><li>C (2.00) or below → no bonus</li></ul>
+<p>The 4th subject can only help. A low grade there never lowers your GPA, and an F in it does not fail you — it simply adds no bonus.</p>
 <h2>If you get an F</h2>
-<p>An F is a grade point of 0.00, and under the board rules an F in any subject makes the overall GPA 0.00. Your official result and the board's rules determine what happens next — check your official HSC result rather than relying on a GPA calculation alone.</p>
+<p>An F is a grade point of 0.00, and under the board rules an F in any main subject makes the overall GPA 0.00. Your official result and the board's rules determine what happens next — check your official HSC result rather than relying on a GPA calculation alone.</p>
 <h2>GPA is not a percentage</h2>
 <p>HSC results are reported as GPA, not as a percentage. There is no official formula that converts GPA to a percentage, so do not treat GPA × 20 as an exact percentage. If an institution asks for a percentage, check that institution's own requirement.</p>
 <h2>Is this calculator official?</h2>
 <p>No. This is an educational calculator for estimating your GPA from your marks or grades. It is not an official Bangladesh Education Board result service. Your official HSC GPA is the result issued by your relevant education board and shown on your official marksheet — if the two differ, the board result is authoritative.</p>
 <h2>Frequently asked questions</h2>
 <h3>How is HSC GPA calculated in Bangladesh?</h3>
-<p>Subject results are converted into letter grades and grade points using the Bangladesh grading scale. The grade points from the main subjects are averaged, with the applicable 4th-subject bonus included when appropriate.</p>
+<p>Subject results are converted into letter grades and grade points using the Bangladesh grading scale. The grade points from the 6 main subjects are averaged, with the applicable 4th-subject bonus included when appropriate.</p>
 <h3>How does the 4th subject affect GPA?</h3>
-<p>If the optional subject's grade point is above 2.00, half of the amount above 2.00 is added as a bonus. For example, an A+ (5.00) in the 4th subject adds 1.50.</p>
+<p>If the optional subject's grade point is above 2.00, the amount above 2.00 is added as a bonus. For example, an A+ (5.00) in the 4th subject adds 3.00.</p>
 <h3>Can I calculate HSC GPA from marks?</h3>
 <p>Yes. Enter your marks and the calculator converts them to the corresponding grade points. Enter the total out of 200 for two-paper subjects, and out of 100 for ICT.</p>
 <h3>Is 5.00 the same as Golden A+?</h3>

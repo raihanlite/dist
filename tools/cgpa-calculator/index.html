@@ -39,7 +39,7 @@
 </header>
 <main class="wrap">
 <h1>CGPA Calculator</h1>
-<p>Semester-wise GPA tracking and cumulative CGPA calculation for all Bangladesh universities. Includes target GPA planner.</p>
+<p>Calculate your semester GPA and cumulative CGPA on the <strong>UGC 4.00 scale</strong> used by Bangladeshi universities. Add your courses with a letter grade or marks percentage, add previous semesters, and plan the GPA you need for your target CGPA.</p>
 <div id="cgpa-tool">
 <p><strong>Current semester courses</strong></p>
 <label for="cg-name">Course name</label>
@@ -48,6 +48,8 @@
 <input type="number" id="cg-credit" min="0" step="0.5" placeholder="3">
 <label for="cg-grade">Grade</label>
 <select id="cg-grade"></select>
+<label for="cg-marks">Or marks (%)</label>
+<input type="number" id="cg-marks" min="0" max="100" step="0.01" placeholder="e.g. 82">
 <p><button type="button" id="cg-add">Add course</button></p>
 <p id="cg-course-msg" class="sk-msg" aria-live="polite"></p>
 <ul id="cg-courses" hidden></ul>
@@ -71,158 +73,31 @@
 <input type="number" id="cg-future" min="0" step="0.5" placeholder="30">
 <div id="cg-target-result"></div>
 </div>
+<script src="/assets/calc.js"></script>
 <script>
-(() => {
-  const root = document.getElementById('cgpa-tool');
-  if (!root) return;
-
-  // UGC Bangladesh standard 4.00 grading scale.
-  const GRADES = [
-    { label: 'A+ (4.00)', value: 4 },
-    { label: 'A (3.75)', value: 3.75 },
-    { label: 'A- (3.50)', value: 3.5 },
-    { label: 'B+ (3.25)', value: 3.25 },
-    { label: 'B (3.00)', value: 3 },
-    { label: 'B- (2.75)', value: 2.75 },
-    { label: 'C+ (2.50)', value: 2.5 },
-    { label: 'C (2.25)', value: 2.25 },
-    { label: 'D (2.00)', value: 2 },
-    { label: 'F (0.00)', value: 0 }
-  ];
-
-  const courses = [];
-  const semesters = [];
-
-  const gradeEl = document.getElementById('cg-grade');
-  gradeEl.innerHTML = GRADES.map((g, i) =>
-    `<option value="${g.value}"${i === 0 ? ' selected' : ''}>${g.label}</option>`).join('');
-
-  const nameEl = document.getElementById('cg-name');
-  const creditEl = document.getElementById('cg-credit');
-  const coursesEl = document.getElementById('cg-courses');
-  const coursesEmptyEl = document.getElementById('cg-courses-empty');
-  const courseMsgEl = document.getElementById('cg-course-msg');
-  const semNameEl = document.getElementById('cg-sem-name');
-  const semGpaEl = document.getElementById('cg-sem-gpa');
-  const semCreditEl = document.getElementById('cg-sem-credit');
-  const semestersEl = document.getElementById('cg-semesters');
-  const semMsgEl = document.getElementById('cg-sem-msg');
-  const resultEl = document.getElementById('cg-result');
-  const targetEl = document.getElementById('cg-target');
-  const futureEl = document.getElementById('cg-future');
-  const targetResultEl = document.getElementById('cg-target-result');
-
-  const esc = (s) => String(s).replace(/[&<>"]/g, (c) =>
-    ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
-
-  function semesterGpa() {
-    const credits = courses.reduce((a, c) => a + c.credit, 0);
-    if (!credits) return null;
-    const points = courses.reduce((a, c) => a + c.credit * c.grade, 0);
-    return { gpa: points / credits, credits, points };
-  }
-
-  function cumulative() {
-    const current = semesterGpa();
-    const credits = semesters.reduce((a, s) => a + s.credits, 0) + (current ? current.credits : 0);
-    if (!credits) return null;
-    const points = semesters.reduce((a, s) => a + s.credits * s.gpa, 0) + (current ? current.points : 0);
-    return { cgpa: points / credits, credits, points };
-  }
-
-  function renderLists() {
-    coursesEl.hidden = courses.length === 0;
-    coursesEmptyEl.hidden = courses.length > 0;
-    coursesEl.innerHTML = courses.map((c, i) => {
-      const label = GRADES.find((g) => g.value === c.grade);
-      return `<li><span>${esc(c.name)}</span><span>${c.credit} cr - ` +
-        `${label ? esc(label.label) : c.grade}` +
-        `</span><button type="button" class="sk-remove" data-course="${i}" aria-label="Remove course">&times;</button></li>`;
-    }).join('');
-
-    semestersEl.hidden = semesters.length === 0;
-    semestersEl.innerHTML = semesters.map((s, i) =>
-      `<li><span>${esc(s.name)}</span><span>GPA ${s.gpa.toFixed(2)} - ${s.credits} cr` +
-      `</span><button type="button" class="sk-remove" data-semester="${i}" aria-label="Remove semester">&times;</button></li>`).join('');
-  }
-
-  function renderResult() {
-    const current = semesterGpa();
-    const cum = cumulative();
-    if (!current && !cum) { resultEl.innerHTML = ''; renderTarget(); return; }
-    resultEl.innerHTML =
-      '<div class="sk-result">' +
-      (current ? `<p class="sk-result-label">Semester GPA</p><p class="sk-result-value">${current.gpa.toFixed(2)}</p>` : '') +
-      (cum ? `<p class="sk-result-note">Cumulative CGPA: <strong>${cum.cgpa.toFixed(2)}</strong> over ${cum.credits} credits</p>` : '') +
-      '</div>';
-    renderTarget();
-  }
-
-  function renderTarget() {
-    const target = parseFloat(targetEl.value);
-    const future = parseFloat(futureEl.value);
-    const cum = cumulative();
-    if (Number.isNaN(target) || Number.isNaN(future) || future <= 0 || !cum) { targetResultEl.innerHTML = ''; return; }
-    const needed = (target * (cum.credits + future) - cum.points) / future;
-    let message;
-    if (needed > 4) {
-      message = `A ${target.toFixed(2)} CGPA is not reachable in the next ${future}` +
-        ` credits - you would need a ${needed.toFixed(2)} GPA, above the 4.00 maximum.`;
-    } else if (needed <= 0) {
-      message = `You have already secured a ${target.toFixed(2)} CGPA even if the remaining ${future} credits go badly.`;
-    } else {
-      message = `You need an average GPA of <strong>${needed.toFixed(2)}</strong> over the next ` +
-        `${future} credits to reach a ${target.toFixed(2)} CGPA.`;
-    }
-    targetResultEl.innerHTML = `<p class="sk-msg">${message}</p>`;
-  }
-
-  document.getElementById('cg-add').addEventListener('click', () => {
-    const credit = parseFloat(creditEl.value);
-    if (Number.isNaN(credit) || credit <= 0) {
-      courseMsgEl.textContent = 'Enter credit hours above 0 to add the course.';
-      return;
-    }
-    courseMsgEl.textContent = '';
-    courses.push({
-      name: nameEl.value.trim() || `Course ${courses.length + 1}`,
-      credit,
-      grade: parseFloat(gradeEl.value)
-    });
-    nameEl.value = '';
-    creditEl.value = '';
-    renderLists();
-    renderResult();
-  });
-
-  document.getElementById('cg-sem-add').addEventListener('click', () => {
-    const gpa = parseFloat(semGpaEl.value);
-    const credits = parseFloat(semCreditEl.value);
-    if (Number.isNaN(gpa) || Number.isNaN(credits) || credits <= 0) {
-      semMsgEl.textContent = 'Enter a GPA (0–4) and credit hours above 0 to add the semester.';
-      return;
-    }
-    semMsgEl.textContent = '';
-    semesters.push({ name: semNameEl.value.trim() || `Semester ${semesters.length + 1}`, gpa, credits });
-    semNameEl.value = '';
-    semGpaEl.value = '';
-    semCreditEl.value = '';
-    renderLists();
-    renderResult();
-  });
-
-  root.addEventListener('click', (event) => {
-    const courseIndex = event.target.getAttribute && event.target.getAttribute('data-course');
-    const semesterIndex = event.target.getAttribute && event.target.getAttribute('data-semester');
-    if (courseIndex !== null && courseIndex !== undefined) { courses.splice(Number(courseIndex), 1); renderLists(); renderResult(); }
-    if (semesterIndex !== null && semesterIndex !== undefined) { semesters.splice(Number(semesterIndex), 1); renderLists(); renderResult(); }
-  });
-
-  targetEl.addEventListener('input', renderTarget);
-  futureEl.addEventListener('input', renderTarget);
-  renderLists();
-})();
+Calc.cgpaTool({
+  rootId: 'cgpa-tool', gradeId: 'cg-grade', nameId: 'cg-name',
+  creditId: 'cg-credit', marksId: 'cg-marks', addId: 'cg-add',
+  coursesId: 'cg-courses', coursesEmptyId: 'cg-courses-empty',
+  courseMsgId: 'cg-course-msg', semNameId: 'cg-sem-name',
+  semGpaId: 'cg-sem-gpa', semCreditId: 'cg-sem-credit',
+  semAddId: 'cg-sem-add', semestersId: 'cg-semesters',
+  semMsgId: 'cg-sem-msg', resultId: 'cg-result',
+  targetId: 'cg-target', futureId: 'cg-future',
+  targetResultId: 'cg-target-result'
+});
 </script>
+<h2>How CGPA is calculated</h2>
+<p>Bangladeshi universities use the University Grants Commission (UGC) uniform <strong>4.00 scale</strong>:</p>
+<table><thead><tr><th align="right">Marks (%)</th><th align="center">Letter Grade</th><th align="right">Grade Point</th></tr></thead><tbody><tr><td align="right">80–100</td><td align="center">A+</td><td align="right">4.00</td></tr><tr><td align="right">75–79</td><td align="center">A</td><td align="right">3.75</td></tr><tr><td align="right">70–74</td><td align="center">A−</td><td align="right">3.50</td></tr><tr><td align="right">65–69</td><td align="center">B+</td><td align="right">3.25</td></tr><tr><td align="right">60–64</td><td align="center">B</td><td align="right">3.00</td></tr><tr><td align="right">55–59</td><td align="center">B−</td><td align="right">2.75</td></tr><tr><td align="right">50–54</td><td align="center">C+</td><td align="right">2.50</td></tr><tr><td align="right">45–49</td><td align="center">C</td><td align="right">2.25</td></tr><tr><td align="right">40–44</td><td align="center">D</td><td align="right">2.00</td></tr><tr><td align="right">Below 40</td><td align="center">F</td><td align="right">0.00</td></tr></tbody></table>
+<p><strong>Semester GPA = Σ (credit hours × grade point) ÷ Σ credit hours.</strong> Your CGPA is the same calculation over all your credits, including previous semesters.</p>
+<h3>Worked example</h3>
+<p>Three 3-credit courses: CSE 101 A+ (4.00), MAT 101 A (3.75), PHY 101 B+ (3.25). Grade points: 3 × 4.00 + 3 × 3.75 + 3 × 3.25 = 12 + 11.25 + 9.75 = 33. GPA = 33 ÷ 9 = <strong>3.67</strong>.</p>
+<h2>What class is my CGPA?</h2>
+<p>On the commonly published UGC cut-offs: <strong>3.00–4.00 is First Class, 2.25–2.99 is Second Class, 2.00–2.24 is Third Class.</strong> Your university may use slightly different lines — check your own syllabus, but 3.00 is the line that matters for most government jobs and graduate applications.</p>
+<h2>Is the UGC scale the same everywhere?</h2>
+<p>Most public universities, National University, and many private universities follow this scale. A few private universities publish their own table (for example, one where A is 4.00 and A− is 3.70). If your result looks different from your transcript, check your university's grading policy — your transcript legend is what counts.</p>
+<p><strong>Last reviewed: November 2026</strong></p>
 </main>
 <footer class="site-footer">
 <div class="wrap">
