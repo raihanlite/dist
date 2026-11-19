@@ -20,7 +20,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@600;700&display=swap" rel="stylesheet" />
-<link rel="stylesheet" href="/assets/style.css?v=2" />
+<link rel="stylesheet" href="/assets/style.css?v=3" />
 <link rel="icon" href="/assets/favicon.svg" type="image/svg+xml" />
 </head>
 <body data-section="tools">
@@ -91,10 +91,10 @@ Calc.gpaTool({
 <blockquote><p><strong>Note:</strong> This calculator provides an estimate based on the Bangladesh HSC grading system. Your official GPA is the result shown on the marksheet issued by the relevant education board.</p></blockquote>
 <h2>How HSC GPA is calculated</h2>
 <p>Bangladesh's HSC grading system uses a <strong>5.00-point scale</strong>. Each subject's marks become a letter grade and a grade point. Most subjects are two papers (200 marks); ICT is one paper (100 marks):</p>
-<table><thead><tr><th align="right">Marks (out of 100)</th><th align="center">Letter Grade</th><th align="right">Grade Point</th></tr></thead><tbody><tr><td align="right">80–100</td><td align="center">A+</td><td align="right">5.00</td></tr><tr><td align="right">70–79</td><td align="center">A</td><td align="right">4.00</td></tr><tr><td align="right">60–69</td><td align="center">A−</td><td align="right">3.50</td></tr><tr><td align="right">50–59</td><td align="center">B</td><td align="right">3.00</td></tr><tr><td align="right">40–49</td><td align="center">C</td><td align="right">2.00</td></tr><tr><td align="right">33–39</td><td align="center">D</td><td align="right">1.00</td></tr><tr><td align="right">0–32</td><td align="center">F</td><td align="right">0.00</td></tr></tbody></table>
+<div class="table-scroll"><table><thead><tr><th align="right">Marks (out of 100)</th><th align="center">Letter Grade</th><th align="right">Grade Point</th></tr></thead><tbody><tr><td align="right">80–100</td><td align="center">A+</td><td align="right">5.00</td></tr><tr><td align="right">70–79</td><td align="center">A</td><td align="right">4.00</td></tr><tr><td align="right">60–69</td><td align="center">A−</td><td align="right">3.50</td></tr><tr><td align="right">50–59</td><td align="center">B</td><td align="right">3.00</td></tr><tr><td align="right">40–49</td><td align="center">C</td><td align="right">2.00</td></tr><tr><td align="right">33–39</td><td align="center">D</td><td align="right">1.00</td></tr><tr><td align="right">0–32</td><td align="center">F</td><td align="right">0.00</td></tr></tbody></table></div>
 <p>The formula is: <strong>GPA = (grade points of the 6 main subjects + 4th-subject bonus) ÷ 6</strong>, capped at 5.00. The 4th subject is never in the divisor — only its bonus counts.</p>
 <h3>Worked example</h3>
-<table><thead><tr><th>Subject</th><th align="right">Grade</th><th align="right">Grade Point</th></tr></thead><tbody><tr><td>Bangla</td><td align="right">A+</td><td align="right">5.00</td></tr><tr><td>English</td><td align="right">A</td><td align="right">4.00</td></tr><tr><td>ICT</td><td align="right">A+</td><td align="right">5.00</td></tr><tr><td>Physics</td><td align="right">A+</td><td align="right">5.00</td></tr><tr><td>Chemistry</td><td align="right">A</td><td align="right">4.00</td></tr><tr><td>Biology</td><td align="right">A+</td><td align="right">5.00</td></tr></tbody></table>
+<div class="table-scroll"><table><thead><tr><th>Subject</th><th align="right">Grade</th><th align="right">Grade Point</th></tr></thead><tbody><tr><td>Bangla</td><td align="right">A+</td><td align="right">5.00</td></tr><tr><td>English</td><td align="right">A</td><td align="right">4.00</td></tr><tr><td>ICT</td><td align="right">A+</td><td align="right">5.00</td></tr><tr><td>Physics</td><td align="right">A+</td><td align="right">5.00</td></tr><tr><td>Chemistry</td><td align="right">A</td><td align="right">4.00</td></tr><tr><td>Biology</td><td align="right">A+</td><td align="right">5.00</td></tr></tbody></table></div>
 <p>Main subjects total 28 ÷ 6 = <strong>4.67</strong>. With an A+ in the 4th subject, the bonus is 5.00 − 2.00 = 3.00, so (28 + 3.00) ÷ 6 = 5.17, capped at <strong>5.00</strong>.</p>
 <h2>The 4th-subject bonus</h2>
 <p>Only the part of your 4th subject's grade point above 2.00 counts as a bonus:</p>
