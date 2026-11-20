@@ -68,6 +68,7 @@ a:focus-visible, button:focus-visible, input:focus-visible, select:focus-visible
    sibling selector in the media query below to work. */
 .nav-toggle-input { position: absolute; width: 1px; height: 1px; opacity: 0; }
 .nav-toggle { display: none; }
+.nav-backdrop, .nav-close { display: none; }
 .brand-row { display: flex; justify-content: space-between; align-items: center; gap: 12px; }
 /* Active page: current section, top level and dropdown item alike */
 body[data-section="home"] .nav-home,
@@ -207,8 +208,33 @@ button:hover, input[type="submit"]:hover { background: var(--accent-ink); }
     font-size: 15px; font-weight: 600; cursor: pointer;
   }
   .nav-toggle-input:focus-visible + .brand-row .nav-toggle { outline: 2px solid var(--accent); outline-offset: 2px; }
-  .site-header nav { display: none; margin-top: 12px; }
-  .nav-toggle-input:checked ~ nav { display: block; }
+  /* Slide-in drawer: the nav sits off-screen left and slides in on tap.
+     Backdrop (also a label for the toggle) closes it when tapped. */
+  .site-header nav {
+    display: block; margin-top: 0;
+    position: fixed; top: 0; left: 0; z-index: 30;
+    width: min(300px, 85vw); height: 100%;
+    padding: 14px 20px 20px; overflow-y: auto;
+    background: var(--surface);
+    box-shadow: 4px 0 24px rgba(35, 32, 28, 0.18);
+    transform: translateX(-105%); visibility: hidden;
+    transition: transform .25s ease, visibility 0s linear .25s;
+  }
+  .nav-toggle-input:checked ~ nav {
+    transform: translateX(0); visibility: visible;
+    transition: transform .25s ease;
+  }
+  .nav-backdrop {
+    display: none;
+    position: fixed; inset: 0; z-index: 20;
+    background: rgba(35, 32, 28, 0.45); cursor: pointer;
+  }
+  .nav-toggle-input:checked ~ .nav-backdrop { display: block; }
+  .nav-close {
+    display: block; text-align: right;
+    font-size: 20px; line-height: 1; color: var(--muted);
+    cursor: pointer; padding: 2px 0 10px;
+  }
   /* Nav becomes a stacked list; the dropdown is always open, indented */
   .nav { flex-direction: column; gap: 0; }
   .nav > li { border-top: 1px solid var(--line); }
