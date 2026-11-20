@@ -161,7 +161,10 @@
 
     function group() { return cfg.groups[groupEl.value]; }
 
-    // One subject row: label (or subject picker) + grade select + marks input.
+    // One subject row: subject name on its own line, then grade and marks
+    // side by side, each with a small visible label and an "or" between
+    // them — grade and marks are alternatives, and the old bare <label>
+    // for the subject name was not attached to any control.
     function rowHtml(kind, index, subject, pickerOptions) {
       var label;
       if (kind === 'picker') {
@@ -170,14 +173,18 @@
             return '<option' + (s === subject ? ' selected' : '') + '>' + esc(s) + '</option>';
           }).join('') + '</select>';
       } else {
-        label = '<label>' + esc(subject) + '</label>';
+        label = '<span class="sk-subject-name">' + esc(subject) + '</span>';
       }
       var max = cfg.marksMax(subject);
       return '<div class="sk-row" data-subject="' + esc(subject) + '">' + label +
-        '<select class="sk-grade" aria-label="' + esc(subject) + ' grade">' + gradeOptions(BD5_GRADES) + '</select>' +
+        '<div class="sk-inputs">' +
+        '<span class="sk-mini"><span class="sk-mini-label">Grade</span>' +
+        '<select class="sk-grade" aria-label="' + esc(subject) + ' grade">' + gradeOptions(BD5_GRADES) + '</select></span>' +
+        '<span class="sk-or">or</span>' +
+        '<span class="sk-mini"><span class="sk-mini-label">Marks</span>' +
         '<input type="number" class="sk-marks" min="0" max="' + max + '" placeholder="Marks 0-' + max +
-        '" aria-label="' + esc(subject) + ' marks">' +
-        '</div>';
+        '" aria-label="' + esc(subject) + ' marks"></span>' +
+        '</div></div>';
     }
 
     function pickerValues() {
@@ -238,12 +245,16 @@
       var max = cfg.marksMax(subject);
       fourthInputsEl.innerHTML =
         '<div class="sk-row" data-subject="' + esc(subject) + '">' +
-        '<label>' + esc(subject) + '</label>' +
+        '<span class="sk-subject-name">' + esc(subject) + '</span>' +
+        '<div class="sk-inputs">' +
+        '<span class="sk-mini"><span class="sk-mini-label">Grade</span>' +
         '<select class="sk-grade" id="' + cfg.rootId + '-opt-grade" aria-label="' + esc(subject) + ' grade">' +
-        gradeOptions(BD5_GRADES) + '</select>' +
+        gradeOptions(BD5_GRADES) + '</select></span>' +
+        '<span class="sk-or">or</span>' +
+        '<span class="sk-mini"><span class="sk-mini-label">Marks</span>' +
         '<input type="number" class="sk-marks" id="' + cfg.rootId + '-opt-marks" min="0" max="' + max +
-        '" placeholder="Marks 0-' + max + '" aria-label="' + esc(subject) + ' marks">' +
-        '</div>';
+        '" placeholder="Marks 0-' + max + '" aria-label="' + esc(subject) + ' marks"></span>' +
+        '</div></div>';
       wireRow(fourthInputsEl.querySelector('.sk-row'));
     }
 
@@ -347,10 +358,13 @@
     var courses = [];
     var semesters = [];
 
+    // No grade is preselected: the old A+ default made every new course
+    // look already filled in. The first option is an empty placeholder.
     var gradeEl = $(cfg.gradeId);
-    gradeEl.innerHTML = UGC_GRADES.map(function (g, i) {
-      return '<option value="' + g.value + '"' + (i === 0 ? ' selected' : '') + '>' + g.label + '</option>';
-    }).join('');
+    gradeEl.innerHTML = '<option value="">Select grade</option>' +
+      UGC_GRADES.map(function (g) {
+        return '<option value="' + g.value + '">' + g.label + '</option>';
+      }).join('');
 
     var nameEl = $(cfg.nameId);
     var creditEl = $(cfg.creditId);
@@ -371,7 +385,7 @@
     gradeEl.addEventListener('change', function () { if (gradeEl.value !== '') marksEl.value = ''; });
     marksEl.addEventListener('input', function () {
       if (marksEl.value !== '') gradeEl.value = '';
-      else gradeEl.selectedIndex = 0; // marks cleared: back to the default grade
+      else gradeEl.value = ''; // marks cleared: no grade selected either
     });
 
     function semesterGpa() {
@@ -460,6 +474,10 @@
         grade = percentToUGC(pct);
       } else {
         grade = parseFloat(gradeEl.value);
+      }
+      if (isNaN(grade)) {
+        courseMsgEl.textContent = 'Choose a grade or enter marks for the course.';
+        return;
       }
       if (isNaN(credit) || credit <= 0) {
         courseMsgEl.textContent = 'Enter credit hours above 0 to add the course.';

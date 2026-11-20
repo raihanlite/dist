@@ -20,7 +20,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@600;700&display=swap" rel="stylesheet" />
-<link rel="stylesheet" href="/assets/style.css?v=10" />
+<link rel="stylesheet" href="/assets/style.css?v=11" />
 <link rel="icon" href="/assets/favicon.svg" type="image/svg+xml" />
 </head>
 <body data-section="tools">
@@ -49,14 +49,14 @@
 <label for="hsc-group">Group</label>
 <select id="hsc-group"><option value="science">Science</option><option value="business">Business Studies</option><option value="humanities">Humanities</option></select>
 </div>
-<p><strong>Main subjects (6)</strong></p>
+<p class="tool-section"><strong>Main subjects (6)</strong></p>
 <p>Enter a letter grade OR marks. Marks fields take the total out of 200 (out of 100 for ICT).</p>
 <div id="hsc-subjects"></div>
-<p><strong>Optional subject (4th subject bonus)</strong></p>
+<p class="tool-section"><strong>Optional subject (4th subject bonus)</strong></p>
 <label for="hsc-optional">Optional subject</label>
 <select id="hsc-optional"></select>
 <div id="hsc-optional-inputs"></div>
-<p><button type="button" id="hsc-calc">Calculate GPA</button> <button type="button" id="hsc-reset">Reset</button></p>
+<p><button type="button" id="hsc-calc">Calculate GPA</button> <button type="button" id="hsc-reset" class="sk-secondary">Reset</button></p>
 <div id="hsc-result" class="result" aria-live="polite"></div>
 </div>
 <script src="/assets/calc.js"></script>

@@ -20,7 +20,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@600;700&display=swap" rel="stylesheet" />
-<link rel="stylesheet" href="/assets/style.css?v=10" />
+<link rel="stylesheet" href="/assets/style.css?v=11" />
 <link rel="icon" href="/assets/favicon.svg" type="image/svg+xml" />
 </head>
 <body data-section="tools">
@@ -49,14 +49,14 @@
 <label for="ssc-group">Group</label>
 <select id="ssc-group"><option value="science">Science</option><option value="commerce">Commerce</option><option value="arts">Arts / Humanities</option></select>
 </div>
-<p><strong>Core subjects (9)</strong></p>
+<p class="tool-section"><strong>Core subjects (9)</strong></p>
 <div id="ssc-subjects"></div>
-<p><strong>4th subject (bonus)</strong></p>
+<p class="tool-section"><strong>4th subject (bonus)</strong></p>
 <p>Only the grade points above C (2.00) in your 4th subject are added as a bonus. A low grade there never lowers your GPA.</p>
 <label for="ssc-fourth">4th subject</label>
 <select id="ssc-fourth"></select>
 <div id="ssc-fourth-inputs"></div>
-<p><button type="button" id="ssc-calc">Calculate GPA</button> <button type="button" id="ssc-reset">Reset</button></p>
+<p><button type="button" id="ssc-calc">Calculate GPA</button> <button type="button" id="ssc-reset" class="sk-secondary">Reset</button></p>
 <div id="ssc-result" class="result" aria-live="polite"></div>
 </div>
 <script src="/assets/calc.js"></script>

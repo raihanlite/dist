@@ -20,7 +20,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@600;700&display=swap" rel="stylesheet" />
-<link rel="stylesheet" href="/assets/style.css?v=10" />
+<link rel="stylesheet" href="/assets/style.css?v=11" />
 <link rel="icon" href="/assets/favicon.svg" type="image/svg+xml" />
 </head>
 <body data-section="tools">
@@ -47,16 +47,28 @@
 <div id="cost-tool">
 <label for="cost-country">Country</label>
 <select id="cost-country"></select>
+<div class="sk-grid">
+<div class="sk-field">
 <label for="cost-tuition">Tuition per year</label>
-<input type="number" id="cost-tuition" min="0" step="1" placeholder="e.g. 30000">
+<div class="sk-money"><span class="sk-currency">$</span><input type="number" id="cost-tuition" min="0" step="1" placeholder="e.g. 30000"></div>
+</div>
+<div class="sk-field">
 <label for="cost-living">Living cost per month</label>
-<input type="number" id="cost-living" min="0" step="1" placeholder="e.g. 1200">
+<div class="sk-money"><span class="sk-currency">$</span><input type="number" id="cost-living" min="0" step="1" placeholder="e.g. 1200"></div>
+</div>
+<div class="sk-field">
 <label for="cost-visa">Visa fee (one-off)</label>
-<input type="number" id="cost-visa" min="0" step="1" placeholder="e.g. 535">
+<div class="sk-money"><span class="sk-currency">$</span><input type="number" id="cost-visa" min="0" step="1" placeholder="e.g. 535"></div>
+</div>
+<div class="sk-field">
 <label for="cost-insurance">Health insurance per year</label>
-<input type="number" id="cost-insurance" min="0" step="1" placeholder="e.g. 2000">
+<div class="sk-money"><span class="sk-currency">$</span><input type="number" id="cost-insurance" min="0" step="1" placeholder="e.g. 2000"></div>
+</div>
+<div class="sk-field">
 <label for="cost-flights">Return flights from Dhaka</label>
-<input type="number" id="cost-flights" min="0" step="1" placeholder="e.g. 1200">
+<div class="sk-money"><span class="sk-currency">$</span><input type="number" id="cost-flights" min="0" step="1" placeholder="e.g. 1200"></div>
+</div>
+</div>
 <button type="button" id="cost-calc">Calculate first-year cost</button>
 <div id="cost-result" class="result" aria-live="polite"></div>
 <p class="sk-result-note" id="cost-notes"></p>
@@ -110,6 +122,8 @@
   function fillDefaults() {
     const c = COUNTRIES[countryEl.value];
     if (!c) return;
+    // Show the country's currency on every money field while typing.
+    root.querySelectorAll('.sk-currency').forEach((el) => { el.textContent = c.symbol; });
     tuitionEl.value = c.tuition;
     livingEl.value = c.living;
     visaEl.value = c.visa;

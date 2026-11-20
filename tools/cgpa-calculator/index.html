@@ -20,7 +20,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@600;700&display=swap" rel="stylesheet" />
-<link rel="stylesheet" href="/assets/style.css?v=10" />
+<link rel="stylesheet" href="/assets/style.css?v=11" />
 <link rel="icon" href="/assets/favicon.svg" type="image/svg+xml" />
 </head>
 <body data-section="tools">
@@ -45,7 +45,7 @@
 <h1>CGPA Calculator for Bangladeshi Universities</h1>
 <p>Calculate your semester GPA and cumulative CGPA on the <strong>UGC 4.00 scale</strong> used by Bangladeshi universities. Add your courses with a letter grade or marks percentage, add previous semesters, and plan the GPA you need for your target CGPA.</p>
 <div id="cgpa-tool">
-<p><strong>Current semester courses</strong></p>
+<p class="tool-section"><strong>Current semester courses</strong></p>
 <label for="cg-name">Course name</label>
 <input type="text" id="cg-name" placeholder="e.g. CSE 101">
 <label for="cg-credit">Credit hours</label>
@@ -58,7 +58,7 @@
 <p id="cg-course-msg" class="sk-msg" aria-live="polite"></p>
 <ul id="cg-courses" hidden></ul>
 <p id="cg-courses-empty">No courses added yet.</p>
-<p><strong>Previous semesters (optional)</strong></p>
+<p class="tool-section"><strong>Previous semesters (optional)</strong></p>
 <p>Add your completed semesters to get a cumulative CGPA.</p>
 <label for="cg-sem-name">Semester</label>
 <input type="text" id="cg-sem-name" placeholder="e.g. Spring 2025">
@@ -70,7 +70,7 @@
 <p id="cg-sem-msg" class="sk-msg" aria-live="polite"></p>
 <ul id="cg-semesters" hidden></ul>
 <div id="cg-result" class="result" aria-live="polite"></div>
-<p><strong>Target CGPA planner</strong></p>
+<p class="tool-section"><strong>Target CGPA planner</strong></p>
 <label for="cg-target">Target CGPA</label>
 <input type="number" id="cg-target" min="0" max="4" step="0.01" placeholder="3.50">
 <label for="cg-future">Remaining credits</label>

@@ -144,23 +144,42 @@ blockquote p:last-child { margin-bottom: 0; }
 
 /* Calculators */
 form { margin: 0 0 20px; }
-label { display: block; font-weight: 600; margin: 14px 0 4px; font-size: 16px; }
+label { display: block; font-weight: 600; margin: 14px 0 6px; font-size: 16px; }
 input[type="number"], input[type="text"], select {
-  width: 100%; max-width: 420px; padding: 11px 12px; font-size: 16px;
+  width: 100%; max-width: 420px; padding: 12px 14px; min-height: 48px; font-size: 16px;
   border: 1px solid #d8d0c0; border-radius: 6px; background: var(--surface); color: var(--ink);
 }
+/* Number fields take typed values only — the tiny spinner arrows are
+   fiddly on touch screens and add visual noise. */
+input[type="number"]::-webkit-outer-spin-button,
+input[type="number"]::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+input[type="number"] { -moz-appearance: textfield; appearance: textfield; }
+/* Selects get one consistent chevron (native arrows vary by browser). */
+select {
+  appearance: none; -webkit-appearance: none; padding-right: 36px;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8'%3E%3Cpath d='M1 1l5 5 5-5' fill='none' stroke='%236b655c' stroke-width='2' stroke-linecap='round'/%3E%3C/svg%3E");
+  background-repeat: no-repeat; background-position: right 14px center;
+}
 input[type="number"]:focus, input[type="text"]:focus, select:focus {
-  border-color: var(--accent); outline: 2px solid rgba(14, 90, 70, 0.2); outline-offset: 0;
+  border-color: var(--accent); outline: none;
+  box-shadow: 0 0 0 3px rgba(14, 90, 70, 0.25);
 }
 /* Calculator buttons live inside <main> only — keep this selector scoped
    to main. A bare `button` rule also styled the nav dropdown button:
-   margin-top: 18px pushed it ~18px below the other nav links, and
-   button:hover painted it dark green with dark text. */
+   margin-top pushed it below the other nav links, and button:hover
+   painted it dark green with dark text. */
 main button, main input[type="submit"] {
-  margin-top: 18px; padding: 12px 24px; font-size: 16px; font-weight: 600;
+  margin-top: 12px; padding: 12px 24px; font-size: 16px; font-weight: 600;
   color: #fff; background: var(--accent); border: none; border-radius: 6px; cursor: pointer;
 }
 main button:hover, main input[type="submit"]:hover { background: var(--accent-ink); }
+/* Secondary button (Reset): quiet, so it never competes with Calculate. */
+main button.sk-secondary {
+  background: var(--surface); color: var(--ink); border: 1px solid var(--line);
+}
+main button.sk-secondary:hover { background: #f1ece2; }
+/* Section heads inside the tools (e.g. "Core subjects (9)"). */
+p.tool-section { margin: 26px 0 6px; font-size: 18px; }
 .result {
   margin: 20px 0; padding: 18px;
   background: var(--accent-soft); border: 1px solid var(--accent-line); border-radius: 8px;
@@ -175,14 +194,52 @@ main button:hover, main input[type="submit"]:hover { background: var(--accent-in
 .sk-result-label { color: var(--muted); font-size: 14px; }
 .sk-result-note { font-size: 15px; color: #444; margin: 6px 0 0; }
 .sk-field { margin-bottom: 10px; }
-.sk-row { display: flex; gap: 10px; flex-wrap: wrap; align-items: end; }
+/* GPA subject row: subject name on its own line, then grade + "or" + marks
+   side by side, each with a small visible label. The old loose flex row
+   left the two boxes unlabeled and wrapped raggedly on phones. */
+.sk-row { display: grid; gap: 6px; margin-bottom: 14px; }
+.sk-subject-name { font-weight: 600; }
+.sk-inputs { display: flex; gap: 10px; align-items: end; flex-wrap: wrap; }
+.sk-mini { flex: 1 1 140px; }
+.sk-mini-label { display: block; font-size: 13px; font-weight: 600; color: var(--muted); margin-bottom: 4px; }
+.sk-or { color: var(--muted); font-size: 14px; padding-bottom: 14px; }
 .sk-msg { font-size: 15px; margin: 8px 0; }
 .sk-ok { color: var(--accent); }
 .sk-bad { color: var(--danger); }
 .sk-value { font-weight: 600; }
 .sk-subject { font-weight: 600; }
-.sk-remove { background: none; color: var(--danger); padding: 4px 8px; margin: 0; font-size: 14px; }
+.sk-remove { background: none; color: var(--danger); padding: 4px 8px; margin: 0; font-size: 18px; min-width: 32px; min-height: 32px; line-height: 1; }
 .sk-remove:hover { background: #fdecea; }
+/* IELTS module toggle: one segmented control, not two primary buttons. */
+.sk-segmented { display: inline-flex; }
+.sk-segmented button { margin-top: 0; border-radius: 0; }
+.sk-segmented button + button { margin-left: -1px; }
+.sk-segmented button:first-child { border-radius: 8px 0 0 8px; }
+.sk-segmented button:last-child { border-radius: 0 8px 8px 0; }
+.sk-segmented button[aria-pressed="true"] { border: 1px solid var(--accent); }
+.sk-segmented button[aria-pressed="false"] {
+  background: var(--surface); color: var(--ink); border: 1px solid var(--line);
+}
+.sk-segmented button[aria-pressed="false"]:hover { background: #f1ece2; }
+/* IELTS band readout: a chip beside the raw-score input, not a paragraph
+   underneath it. */
+.sk-inline { display: flex; gap: 12px; align-items: center; flex-wrap: wrap; }
+.sk-inline input[type="number"] { flex: 1 1 140px; max-width: 280px; }
+.sk-band {
+  display: inline-block; font-weight: 600; color: var(--accent-ink);
+  background: var(--accent-soft); border-radius: 6px; padding: 6px 12px; margin: 0;
+}
+/* Cost estimator: money fields in a 2-column grid, each with a currency
+   addon so the currency is visible while typing. */
+.sk-grid { display: grid; grid-template-columns: 1fr; gap: 0 16px; }
+@media (min-width: 640px) { .sk-grid { grid-template-columns: 1fr 1fr; } }
+.sk-money { display: flex; }
+.sk-money input[type="number"] { flex: 1; min-width: 0; border-radius: 0 6px 6px 0; }
+.sk-currency {
+  display: flex; align-items: center; padding: 0 12px;
+  background: #f1ece2; border: 1px solid #d8d0c0; border-right: none;
+  border-radius: 6px 0 0 6px; font-weight: 600; color: var(--muted);
+}
 
 /* Footer — three columns: guides, tools, about/legal */
 .site-footer {
