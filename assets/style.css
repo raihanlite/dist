@@ -258,6 +258,11 @@ button:hover, input[type="submit"]:hover { background: var(--accent-ink); }
   .foot-cols { grid-template-columns: 1fr; gap: 20px; }
 }
 
+/* Hero images (guides + homepage): 16:9 banner, credit line underneath */
+.hero { margin: 0 0 20px; }
+.hero img { display: block; width: 100%; aspect-ratio: 16 / 9; object-fit: cover; border-radius: 8px; }
+.hero figcaption { margin-top: 6px; font-size: 13px; color: var(--muted); }
+
 /* Study-abroad guide components: facts first, tables over paragraphs */
 .callout {
   margin: 0 0 20px; padding: 16px 18px;
