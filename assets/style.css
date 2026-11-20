@@ -195,8 +195,10 @@ button:hover, input[type="submit"]:hover { background: var(--accent-ink); }
 .copyright { margin: 0; padding-top: 20px; border-top: 1px solid var(--line); }
 
 @media (min-width: 641px) {
-  /* Desktop: brand left, nav right, one row */
-  .site-header .wrap { display: flex; align-items: center; justify-content: space-between; gap: 8px 32px; }
+  /* Desktop: brand left, nav right, one row. The header gets a wider
+     container than the 760px content column, or the nav wraps ("About"
+     dropped to a second line at 1919px with the narrow container). */
+  .site-header .wrap { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 8px 32px; max-width: 1080px; }
   .site-header nav { margin-top: 0; }
 }
 
