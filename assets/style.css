@@ -60,7 +60,7 @@ a:focus-visible, button:focus-visible, input:focus-visible, select:focus-visible
   color: var(--ink); font: inherit; font-size: 16px; font-weight: 600;
   cursor: pointer;
 }
-.nav-drop-toggle:hover { color: var(--accent); }
+.nav-drop-toggle:hover, .has-sub.open .nav-drop-toggle { color: var(--accent); }
 .chev { transition: transform .2s ease; }
 .has-sub.open .chev { transform: rotate(180deg); }
 .sub {
@@ -99,7 +99,7 @@ body[data-section="visas"] .nav-visas,
 body[data-section="costs"] .nav-costs { font-weight: 700; }
 
 /* Content */
-main { padding: 48px 0 56px; }
+main.wrap { padding: 48px 20px 56px; }
 h1, h2, h3 {
   font-family: "Cormorant Garamond", Georgia, "Times New Roman", serif;
   font-weight: 700; color: var(--ink);
@@ -152,11 +152,15 @@ input[type="number"], input[type="text"], select {
 input[type="number"]:focus, input[type="text"]:focus, select:focus {
   border-color: var(--accent); outline: 2px solid rgba(14, 90, 70, 0.2); outline-offset: 0;
 }
-button, input[type="submit"] {
+/* Calculator buttons live inside <main> only — keep this selector scoped
+   to main. A bare `button` rule also styled the nav dropdown button:
+   margin-top: 18px pushed it ~18px below the other nav links, and
+   button:hover painted it dark green with dark text. */
+main button, main input[type="submit"] {
   margin-top: 18px; padding: 12px 24px; font-size: 16px; font-weight: 600;
   color: #fff; background: var(--accent); border: none; border-radius: 6px; cursor: pointer;
 }
-button:hover, input[type="submit"]:hover { background: var(--accent-ink); }
+main button:hover, main input[type="submit"]:hover { background: var(--accent-ink); }
 .result {
   margin: 20px 0; padding: 18px;
   background: var(--accent-soft); border: 1px solid var(--accent-line); border-radius: 8px;
