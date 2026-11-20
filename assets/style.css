@@ -63,6 +63,12 @@ a:focus-visible, button:focus-visible, input:focus-visible, select:focus-visible
 .has-sub:hover .sub, .has-sub:focus-within .sub { display: block; }
 .sub a { display: block; padding: 8px 16px; font-weight: 400; }
 .sub a:hover { background: var(--accent-soft); }
+/* Mobile menu toggle: a checkbox drives it, so no JavaScript is needed.
+   The input must stay a direct child of .wrap, before <nav>, for the
+   sibling selector in the media query below to work. */
+.nav-toggle-input { position: absolute; width: 1px; height: 1px; opacity: 0; }
+.nav-toggle { display: none; }
+.brand-row { display: flex; justify-content: space-between; align-items: center; gap: 12px; }
 /* Active page: current section, top level and dropdown item alike */
 body[data-section="home"] .nav-home,
 body[data-section="study-abroad"] .nav-study,
@@ -192,6 +198,17 @@ button:hover, input[type="submit"]:hover { background: var(--accent-ink); }
   h1 { font-size: 29px; }
   h2 { font-size: 24px; }
   .brand { font-size: 28px; }
+  /* Mobile menu: hidden behind a Menu button, tap to open. The old
+     always-open stacked list took ~450px of the first screen. */
+  .nav-toggle {
+    display: inline-block; padding: 8px 14px;
+    border: 1px solid var(--line); border-radius: 8px;
+    background: var(--surface); color: var(--ink);
+    font-size: 15px; font-weight: 600; cursor: pointer;
+  }
+  .nav-toggle-input:focus-visible + .brand-row .nav-toggle { outline: 2px solid var(--accent); outline-offset: 2px; }
+  .site-header nav { display: none; margin-top: 12px; }
+  .nav-toggle-input:checked ~ nav { display: block; }
   /* Nav becomes a stacked list; the dropdown is always open, indented */
   .nav { flex-direction: column; gap: 0; }
   .nav > li { border-top: 1px solid var(--line); }
