@@ -34,9 +34,11 @@ a:focus-visible, button:focus-visible, input:focus-visible, select:focus-visible
 /* Header */
 .site-header { background: var(--surface); border-bottom: 1px solid var(--line); padding: 22px 0 16px; }
 .brand {
+  display: inline-flex; align-items: center; gap: 10px;
   font-family: "Cormorant Garamond", Georgia, "Times New Roman", serif;
   font-size: 32px; font-weight: 700; line-height: 1.1; color: var(--ink);
 }
+.brand-mark { width: 36px; height: 36px; display: block; flex: none; }
 .brand:hover { text-decoration: none; color: var(--accent); }
 .tagline { margin: 4px 0 0; color: var(--muted); font-size: 15px; }
 
