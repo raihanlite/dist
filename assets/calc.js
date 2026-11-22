@@ -163,12 +163,13 @@
    * from the marksheet, and a Compulsory / Group / Optional tag, so the
    * difference between counted subjects and the 4th subject is visible.
    * The result updates live once every core row is filled.
-   * Layout is table-style: on desktop each row is one line — Code |
-   * Subject | Grade or Marks — under a header row, with the 4th subject
-   * under its own divider band. On phones the rows stack: code badge
-   * beside the subject name, input below. The group is picked with big
-   * tabs (Science / Business Studies / Humanities, or Science /
-   * Commerce / Arts), not a drop-down, so all groups are visible.
+   * Layout is the clean card style: the group tabs and the Grade/Marks
+   * toggle sit side by side in one top row (stacked on phones). Subjects
+   * render as rows in a bordered card, two boxes per row: the subject
+   * name with its board code in small text underneath, and the grade or
+   * marks input. No header row, no per-row tags. The 4th subject is one
+   * row in its own card: a subject select beside the grade or marks
+   * input, which shows "None" until a 4th subject is picked.
    */
   function gpaTool(cfg) {
     var root = $(cfg.rootId);
@@ -201,56 +202,52 @@
 
     function renderMode() {
       if (!modeEl) return;
+      // No visible label: the two halves explain themselves.
       modeEl.innerHTML =
-        '<span class="sk-mini-label">Input method</span>' +
         '<div class="sk-segmented" role="group" aria-label="Input method">' +
         '<button type="button" data-mode="grade" aria-pressed="' + (mode === 'grade') + '">Grade</button>' +
         '<button type="button" data-mode="marks" aria-pressed="' + (mode === 'marks') + '">Marks</button>' +
         '</div>';
     }
 
-    // One subject row: name + board code + tag on its own line, then a
-    // single input — a grade select in Grade mode, a marks field in
-    // Marks mode. The other method stays hidden, so the form never shows
-    // two boxes per subject.
+    // One subject row's input: a grade select in Grade mode, a marks field
+    // in Marks mode. The other method stays hidden, so the form never shows
+    // two boxes per subject. No visible label: the select's "Select grade"
+    // placeholder and the marks field's "Marks 0-N" placeholder say what
+    // the box is, and the aria-label names the subject for screen readers.
     function inputHtml(subject, idSuffix) {
       var saved = values[subject.name] || { grade: '', marks: '' };
       var max = cfg.marksMax(subject);
       var ids = idSuffix ? ' id="' + cfg.rootId + idSuffix + '-grade"' : '';
       var idm = idSuffix ? ' id="' + cfg.rootId + idSuffix + '-marks"' : '';
       if (mode === 'marks') {
-        return '<span class="sk-mini"><span class="sk-mini-label">Marks (out of ' + max + ')</span>' +
-          '<input type="number" class="sk-marks"' + idm + ' min="0" max="' + max + '" placeholder="Marks 0-' + max +
-          '" aria-label="' + esc(subject.name) + ' marks" value="' + esc(saved.marks || '') + '"></span>';
+        return '<input type="number" class="sk-marks"' + idm + ' min="0" max="' + max + '" placeholder="Marks 0-' + max +
+          '" aria-label="' + esc(subject.name) + ' marks" value="' + esc(saved.marks || '') + '">';
       }
-      return '<span class="sk-mini"><span class="sk-mini-label">Grade</span>' +
-        '<select class="sk-grade"' + ids + ' aria-label="' + esc(subject.name) + ' grade">' +
-        gradeOptions(BD5_GRADES, saved.grade || '') + '</select></span>';
+      return '<select class="sk-grade"' + ids + ' aria-label="' + esc(subject.name) + ' grade">' +
+        gradeOptions(BD5_GRADES, saved.grade || '') + '</select>';
     }
 
-    // One subject row, table-style: the board code in its own column,
-    // then the subject name (or picker) with its tag, then a single input.
-    // CSS puts the three on one line at desktop width and stacks them on
-    // phones. Picker rows show the current choice's code in the code
-    // column; refreshPickers keeps it in sync when the choice changes.
+    // One subject row in the card: two boxes side by side. The subject box
+    // shows the name with its board code in small text underneath (fixed
+    // subjects), or is the subject picker itself (the options carry their
+    // codes, e.g. "Biology (178/179)"). The second box is the single
+    // input. No header row, no tags: the section heads carry the meaning.
     function rowHtml(kind, index, subject, pickerOptions, tag) {
-      var head;
+      var box;
       if (kind === 'picker') {
-        head = '<select class="sk-subject" data-picker="' + index + '" aria-label="Subject">' +
+        box = '<select class="sk-subject" data-picker="' + index + '" aria-label="Subject">' +
           pickerOptions.map(function (s) {
             return '<option value="' + esc(s.name) + '"' + (s.name === subject.name ? ' selected' : '') + '>' +
               esc(s.name) + (s.code ? ' (' + esc(s.code) + ')' : '') + '</option>';
-          }).join('') + '</select>' +
-          (tag ? ' <span class="sk-tag">' + esc(tag) + '</span>' : '');
+          }).join('') + '</select>';
       } else {
-        head = '<span class="sk-subject-name">' + esc(subject.name) + '</span>' +
-          (tag ? ' <span class="sk-tag">' + esc(tag) + '</span>' : '');
+        box = '<div class="sk-subject-box"><span class="sk-subject-name">' + esc(subject.name) + '</span>' +
+          (subject.code ? '<span class="sk-code">' + esc(subject.code) + '</span>' : '') + '</div>';
       }
       var max = cfg.marksMax(subject);
       return '<div class="sk-row" data-subject="' + esc(subject.name) + '" data-max="' + max + '">' +
-        '<span class="sk-code">' + esc(subject.code || '') + '</span>' +
-        '<div class="sk-subject-line">' + head + '</div>' +
-        '<div class="sk-inputs">' + inputHtml(subject) + '</div></div>';
+        box + '<div class="sk-inputs">' + inputHtml(subject) + '</div></div>';
     }
 
     function pickerValues() {
@@ -307,9 +304,7 @@
           }).join('');
         sel.closest('.sk-row').setAttribute('data-subject', current);
         var row = sel.closest('.sk-row');
-        var codeEl = row.querySelector('.sk-code');
         var currentSubject = options.filter(function (s) { return s.name === current; })[0];
-        if (codeEl && currentSubject) codeEl.textContent = currentSubject.code || '';
         if (currentSubject) {
           row.setAttribute('data-max', cfg.marksMax(currentSubject));
           var marksEl = row.querySelector('.sk-marks');
@@ -351,19 +346,35 @@
       }
     }
 
+    // The 4th-subject row lives in a static shell in the page HTML: one
+    // row in its own card, the subject select beside the grade or marks
+    // input. This fills only the input box. Until a 4th subject is picked
+    // the input shows "None", disabled, so the row is complete from the
+    // start instead of appearing and disappearing.
     function renderFourthInputs() {
-      if (!fourthEl.value) { fourthInputsEl.innerHTML = ''; return; }
+      var box = fourthInputsEl.querySelector('.sk-inputs');
+      if (!box) return;
+      var row = fourthInputsEl.querySelector('.sk-row');
+      if (!fourthEl.value) {
+        row.setAttribute('data-subject', '');
+        row.setAttribute('data-max', '100');
+        box.innerHTML = mode === 'marks'
+          ? '<input type="number" class="sk-marks" disabled placeholder="—" aria-label="4th subject marks">'
+          : '<select class="sk-grade" disabled aria-label="4th subject grade"><option value="">None</option></select>';
+        return;
+      }
       var subject = fourthOptions().filter(function (s) { return s.name === fourthEl.value; })[0];
-      if (!subject) { fourthInputsEl.innerHTML = ''; return; }
+      if (!subject) {
+        row.setAttribute('data-subject', '');
+        row.setAttribute('data-max', '100');
+        box.innerHTML = '';
+        return;
+      }
       var max = cfg.marksMax(subject);
-      fourthInputsEl.innerHTML =
-        '<div class="sk-fourth-band">4th subject (optional)</div>' +
-        '<div class="sk-row" data-subject="' + esc(subject.name) + '" data-max="' + max + '">' +
-        '<span class="sk-code">' + esc(subject.code || '') + '</span>' +
-        '<div class="sk-subject-line"><span class="sk-subject-name">' + esc(subject.name) + '</span>' +
-        ' <span class="sk-tag">Optional (4th subject)</span></div>' +
-        '<div class="sk-inputs">' + inputHtml(subject, '-opt') + '</div></div>';
-      wireRow(fourthInputsEl.querySelector('.sk-row'));
+      row.setAttribute('data-subject', subject.name);
+      row.setAttribute('data-max', max);
+      box.innerHTML = inputHtml(subject, '-opt');
+      wireRow(row);
     }
 
     function wireRow(row) {
@@ -383,8 +394,7 @@
 
     function renderRows() {
       var g = group();
-      var html = '<div class="sk-table-head" aria-hidden="true"><span>Code</span><span>Subject</span><span>' +
-        (mode === 'marks' ? 'Marks' : 'Grade') + '</span></div>';
+      var html = '';
       g.fixed.forEach(function (s) { html += rowHtml('fixed', 0, s, null, s.tag); });
       (g.pickers || []).forEach(function (p, i) {
         var current = pickerSel[i] || pickerDefault(p, i);
@@ -400,8 +410,9 @@
       renderRows();
       if (resetForm) {
         fourthEl.value = '';
-        lastFourth = '';
-        fourthInputsEl.innerHTML = '';
+        // Force renderFourthOptions to rebuild the 4th row into its None
+        // state; the row shell itself stays in the page.
+        lastFourth = null;
       }
       renderFourthOptions();
       resultEl.innerHTML = '';

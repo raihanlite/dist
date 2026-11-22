@@ -180,12 +180,19 @@ main button.sk-secondary {
   background: var(--surface); color: var(--ink); border: 1px solid var(--line);
 }
 main button.sk-secondary:hover { background: #f1ece2; }
-/* Calculate / Reset row: centred, so the buttons sit symmetrically under
-   the table instead of hanging off the left edge. */
-.sk-actions { text-align: center; margin-top: 22px; }
-.sk-actions button { margin-top: 0; }
-/* Section heads inside the tools (e.g. "Core subjects (9)"). */
+/* Calculate / Reset row: Calculate is the wide primary button, Reset the
+   narrower quiet one, side by side on desktop, stacked on phones. */
+.sk-actions { display: flex; gap: 12px; margin-top: 22px; }
+.sk-actions button { margin-top: 0; flex: 1 1 0; }
+.sk-actions button:first-child { flex: 2 1 0; }
+@media (max-width: 639px) { .sk-actions { flex-direction: column; } }
+/* Section heads inside the tools (e.g. "Main subjects" + count badge). */
 p.tool-section { margin: 24px 0 8px; font-size: 18px; }
+.sk-count, .sk-badge {
+  display: inline-block; font-size: 13px; font-weight: 700; color: var(--muted);
+  background: #f1ece2; border: 1px solid var(--line); border-radius: 999px;
+  padding: 1px 9px; vertical-align: 1px;
+}
 .result {
   margin: 20px 0; padding: 18px;
   background: var(--accent-soft); border: 1px solid var(--accent-line); border-radius: 8px;
@@ -200,89 +207,74 @@ p.tool-section { margin: 24px 0 8px; font-size: 18px; }
 .sk-result-label { color: var(--muted); font-size: 14px; }
 .sk-result-note { font-size: 15px; color: #444; margin: 6px 0 0; }
 .sk-field { margin-bottom: 10px; }
-/* GPA subject row: subject name on its own line, then grade + "or" + marks
-   side by side, each with a small visible label. The old loose flex row
-   left the two boxes unlabeled and wrapped raggedly on phones. */
-/* GPA subject row, table-style: on phones the code badge sits beside the
-   subject name and the input drops below; on desktop (see the media query
-   below) the row becomes one line: Code | Subject | Grade or Marks. */
-.sk-row { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 8px; margin-bottom: 14px; }
-.sk-row .sk-inputs { flex: 1 1 100%; }
-/* Table header row above the subjects: hidden on phones, shown on desktop
-   with the same three columns as the rows, so Code, Subject and the input
-   line up. */
-.sk-table-head { display: none; }
-/* 4th-subject divider band above the 4th-subject row. */
-.sk-fourth-band {
-  background: var(--accent-soft); color: var(--accent-ink);
-  font-size: 13px; font-weight: 700; letter-spacing: 0.04em; text-transform: uppercase;
-  text-align: center; border-radius: 6px; padding: 6px 10px; margin: 4px 0 12px;
+/* GPA subject card: one bordered card holding the rows. Each row is two
+   boxes side by side, the subject box and the input box, separated by a
+   hairline. On phones the boxes stack: subject box on top, input below. */
+.sk-card {
+  border: 1px solid var(--line); border-radius: 12px; background: var(--surface);
+  padding: 2px 16px;
 }
+.sk-row { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; padding: 12px 0; border-bottom: 1px solid var(--line); }
+.sk-card .sk-row:last-child { border-bottom: none; }
+.sk-row .sk-inputs { flex: 1 1 100%; }
+.sk-row .sk-subject-box, .sk-row .sk-subject { flex: 1 1 100%; }
 @media (min-width: 640px) {
-  .sk-table-head {
-    display: grid; grid-template-columns: 96px minmax(0, 1fr) 230px; gap: 12px;
-    font-size: 13px; font-weight: 700; letter-spacing: 0.04em; text-transform: uppercase;
-    color: var(--muted); padding-bottom: 6px; margin-bottom: 10px;
-    border-bottom: 1px solid var(--line);
-  }
   .sk-row {
-    display: grid; grid-template-columns: 96px minmax(0, 1fr) 230px; gap: 12px;
-    align-items: center; margin-bottom: 10px; padding-bottom: 10px;
-    border-bottom: 1px solid var(--line);
+    display: grid; grid-template-columns: minmax(0, 1.15fr) minmax(0, 1fr); gap: 12px;
+    align-items: center;
   }
   .sk-row .sk-inputs { flex: none; }
-  /* The header already says Grade or Marks, so the per-row label is redundant. */
-  .sk-row .sk-mini-label { display: none; }
 }
 .sk-subject-name { font-weight: 600; }
-/* Subject line: name on top, tag underneath, so a long name never pushes
-   its tag onto a ragged second line in some rows and not others. The
-   picker select fills the column width. */
-.sk-subject-line { display: flex; flex-direction: column; align-items: flex-start; gap: 2px; flex: 1 1 auto; min-width: 0; }
-.sk-subject-line .sk-subject { width: 100%; }
-.sk-code {
-  display: inline-block; font-size: 13px; font-weight: 700;
-  color: var(--accent-ink); background: var(--accent-soft);
-  border-radius: 4px; padding: 1px 7px;
+/* Subject box: styled like an input box, name on top with the board code
+   in small muted text underneath. The picker select is the subject box
+   itself (its options carry their codes). */
+.sk-subject-box {
+  border: 1px solid #d8d0c0; border-radius: 6px; background: var(--surface);
+  padding: 9px 14px; min-height: 48px;
+  display: flex; flex-direction: column; justify-content: center; gap: 1px;
 }
-.sk-tag {
-  display: inline-block; font-size: 12px; font-weight: 700;
-  letter-spacing: 0.04em; text-transform: uppercase; color: var(--muted);
+.sk-code { display: block; font-size: 12px; font-weight: 600; color: var(--muted); }
+/* Top row: the group tabs on the left and the Grade/Marks toggle on the
+   right, side by side on desktop, stacked on phones. Both are joined
+   pills: one container, the pressed segment filled in the site's teal. */
+.sk-topbar { display: flex; flex-direction: column; gap: 12px; }
+.sk-topbar .sk-mode { margin: 0; }
+@media (min-width: 640px) {
+  .sk-topbar { flex-direction: row; align-items: stretch; }
+  .sk-topbar .sk-group-tabs { flex: 1 1 auto; }
+  .sk-topbar .sk-mode { flex: 0 0 220px; }
 }
-/* Input-method toggle above the subject rows: one segmented control,
-   same pattern as the IELTS module toggle. The toggle spans the full
-   width like the group tabs above it, with two equal halves, so the two
-   controls line up. Scoped to .sk-mode so the IELTS module toggle keeps
-   its compact inline-flex form. */
-.sk-mode { margin: 18px 0 0; }
-.sk-mode .sk-mini-label { margin-bottom: 6px; }
+/* Input-method toggle: one segmented control, same pattern as the IELTS
+   module toggle, with two equal halves. Scoped to .sk-mode so the IELTS
+   module toggle keeps its compact inline-flex form. */
+.sk-mode { margin: 0; }
 .sk-mode .sk-segmented { display: flex; }
 .sk-mode .sk-segmented button { flex: 1 1 0; }
 /* Group tabs: all groups visible at once, in the site's own teal. The
    pressed tab is the current group. Overrides the base `main button` rule. */
-.sk-group-tabs { display: flex; gap: 8px; margin-top: 6px; }
+.sk-group-tabs { display: flex; }
 .sk-group-tabs button {
   flex: 1 1 0; margin-top: 0; padding: 12px 8px; font-size: 15px; font-weight: 600;
-  border-radius: 8px; border: 1px solid var(--line);
+  border-radius: 0; border: 1px solid var(--line);
   background: var(--surface); color: var(--ink);
 }
+.sk-group-tabs button + button { margin-left: -1px; }
+.sk-group-tabs button:first-child { border-radius: 8px 0 0 8px; }
+.sk-group-tabs button:last-child { border-radius: 0 8px 8px 0; }
 .sk-group-tabs button:hover { background: #f1ece2; }
 .sk-group-tabs button[aria-pressed="true"] {
   background: var(--accent); color: #fff; border-color: var(--accent);
 }
 .sk-group-tabs button[aria-pressed="true"]:hover { background: var(--accent-ink); }
-.sk-inputs { display: flex; gap: 10px; align-items: end; flex-wrap: wrap; }
-.sk-mini { flex: 1 1 140px; }
-.sk-mini-label { display: block; font-size: 13px; font-weight: 600; color: var(--muted); margin-bottom: 4px; }
+.sk-inputs { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+.sk-inputs > * { flex: 1 1 auto; min-width: 0; }
 .sk-or { color: var(--muted); font-size: 14px; padding-bottom: 14px; }
 .sk-msg { font-size: 15px; margin: 8px 0; }
 .sk-ok { color: var(--accent); }
 .sk-bad { color: var(--danger); }
 .sk-value { font-weight: 600; }
 .sk-subject { font-weight: 600; }
-/* Standalone selects that should span the full width, like the group tabs
-   and the input-method toggle above them (the 4th-subject picker). */
-.sk-wide { width: 100%; max-width: none; }
 .sk-remove { background: none; color: var(--danger); padding: 4px 8px; margin: 0; font-size: 18px; min-width: 32px; min-height: 32px; line-height: 1; }
 .sk-remove:hover { background: #fdecea; }
 /* IELTS module toggle: one segmented control, not two primary buttons. */

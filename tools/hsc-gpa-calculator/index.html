@@ -25,7 +25,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@600;700&display=swap" rel="stylesheet" />
-<link rel="stylesheet" href="/assets/style.css?v=17" />
+<link rel="stylesheet" href="/assets/style.css?v=18" />
 <link rel="icon" type="image/png" href="/assets/favicon-96x96.png" sizes="96x96" />
 <link rel="shortcut icon" href="/assets/favicon.ico" />
 <link rel="apple-touch-icon" href="/assets/apple-touch-icon.png" />
@@ -54,16 +54,14 @@
 <main class="wrap">
 <h1>HSC GPA Calculator for All Education Boards in Bangladesh</h1>
 <div id="hsc-tool">
-<div>
-<span class="sk-mini-label">Group</span>
+<div class="sk-topbar">
 <div id="hsc-group" class="sk-group-tabs" role="group" aria-label="Group"></div>
-</div>
 <div id="hsc-mode" class="sk-mode"></div>
-<p class="tool-section"><strong>Main subjects (6)</strong></p>
-<div id="hsc-subjects"></div>
-<p class="tool-section"><strong>Optional subject (4th subject bonus)</strong></p>
-<select id="hsc-optional" aria-label="Optional subject" class="sk-wide"></select>
-<div id="hsc-optional-inputs"></div>
+</div>
+<p class="tool-section"><strong>Main subjects</strong> <span class="sk-count">6</span></p>
+<div id="hsc-subjects" class="sk-card"></div>
+<p class="tool-section"><strong>4th subject</strong> <span class="sk-badge">Optional</span></p>
+<div id="hsc-optional-inputs" class="sk-card"><div class="sk-row" data-subject="" data-max="100"><select id="hsc-optional" class="sk-subject" aria-label="Optional subject"></select><div class="sk-inputs"></div></div></div>
 <p class="sk-actions"><button type="button" id="hsc-calc">Calculate GPA</button> <button type="button" id="hsc-reset" class="sk-secondary">Reset</button></p>
 <div id="hsc-result" class="result" aria-live="polite"></div>
 </div>
