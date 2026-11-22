@@ -11,6 +11,14 @@
  *   so A+ adds 3.00, A adds 2.00, A- adds 1.50, B adds 1.00.
  *   An F in any core subject makes the whole GPA 0.00; an F in the
  *   4th subject only removes the bonus. GPA is capped at 5.00.
+ * - Full marks in Marks mode (researched Nov 2026, board routines and
+ *   marksheets): SSC Bangla and English are 200 each (two 100-mark
+ *   papers), SSC ICT is 50, every other SSC subject is 100. HSC
+ *   subjects are 200 each (two papers), HSC ICT is 100. Subject codes
+ *   are the board codes from the marksheet (e.g. SSC Physics 136,
+ *   HSC Physics 174/175). Physical Education (147) and Career
+ *   Education (156) are continuous-assessment subjects at SSC and are
+ *   not part of the 9-subject GPA.
  * - CGPA: UGC uniform 4.00 scale (A+ 4.00, A 3.75, A- 3.50, B+ 3.25,
  *   B 3.00, B- 2.75, C+ 2.50, C 2.25, D 2.00, F 0.00).
  * - IELTS: commonly published raw-score to band tables (IELTS/British
@@ -110,10 +118,11 @@
 
   function $(id) { return document.getElementById(id); }
 
-  function gradeOptions(grades) {
+  function gradeOptions(grades, selected) {
     return '<option value="">Select grade</option>' +
       grades.map(function (g) {
-        return '<option value="' + g.value + '">' + g.label + '</option>';
+        return '<option value="' + g.value + '"' +
+          (String(g.value) === String(selected) ? ' selected' : '') + '>' + g.label + '</option>';
       }).join('');
   }
 
@@ -133,63 +142,132 @@
 
   /* ---------- GPA tool: SSC + HSC ----------
    * cfg = {
-   *   rootId, groupId, subjectsId, fourthId, fourthInputsId,
+   *   rootId, groupId, modeId, subjectsId, fourthId, fourthInputsId,
    *   calcId, resetId, resultId,
    *   coreCount: 9 (SSC) | 6 (HSC),
-   *   marksMax: function (subject) -> 100 (SSC) | 200, or 100 for ICT (HSC),
+   *   marksMax: function (subject) -> full marks for marks mode,
    *   groups: { key: {
-   *     fixed: [subject names, one row each],
-   *     pickers: [{ options: [subject names] }],   // one row each; the
-   *        subject itself is chosen from the list (duplicates blocked)
-   *     fourthBase: [extra 4th-subject options],
+   *     fixed: [{ name, code, tag }],   // tag: 'Compulsory' or 'Group'
+   *     pickers: [{ tag, def, fourth, options: [{ name, code }] }],
+   *        // one row each; the subject itself is chosen from the list
+   *        // (duplicates blocked). def is the default option's name;
+   *        // without it the default is options[index]. fourth: false
+   *        // keeps a picker (e.g. Religion) out of the 4th-subject list.
+   *     fourthBase: [{ name, code }],  // extra 4th-subject options
    *     fourthFromPickers: true|false  // unpicked picker options join the 4th list
    *   } }
    * }
-   * Every row takes a letter grade OR marks; choosing one clears the other.
+   * One input method at a time: a Grade/Marks toggle above the rows
+   * shows only grade selects or only marks inputs. Switching keeps
+   * everything already entered. Every row shows the board subject code
+   * from the marksheet, and a Compulsory / Group / Optional tag, so the
+   * difference between counted subjects and the 4th subject is visible.
    * The result updates live once every core row is filled.
    */
   function gpaTool(cfg) {
     var root = $(cfg.rootId);
     if (!root) return;
     var groupEl = $(cfg.groupId);
+    var modeEl = cfg.modeId ? $(cfg.modeId) : null;
     var subjectsEl = $(cfg.subjectsId);
     var fourthEl = $(cfg.fourthId);
     var fourthInputsEl = $(cfg.fourthInputsId);
     var resultEl = $(cfg.resultId);
     // What the tool calls its counted subjects (SSC: "core subject", HSC: "main subject").
     var subjectWord = cfg.subjectWord || 'core subject';
+    var mode = 'grade'; // 'grade' | 'marks'
+    var values = {}; // subject name -> { grade: '', marks: '' }
+    var pickerSel = {}; // picker index -> chosen subject name
 
     function group() { return cfg.groups[groupEl.value]; }
 
-    // One subject row: subject name on its own line, then grade and marks
-    // side by side, each with a small visible label and an "or" between
-    // them — grade and marks are alternatives, and the old bare <label>
-    // for the subject name was not attached to any control.
-    function rowHtml(kind, index, subject, pickerOptions) {
-      var label;
+    function renderMode() {
+      if (!modeEl) return;
+      modeEl.innerHTML =
+        '<span class="sk-mini-label">Input method</span>' +
+        '<div class="sk-segmented" role="group" aria-label="Input method">' +
+        '<button type="button" data-mode="grade" aria-pressed="' + (mode === 'grade') + '">Grade</button>' +
+        '<button type="button" data-mode="marks" aria-pressed="' + (mode === 'marks') + '">Marks</button>' +
+        '</div>' +
+        '<p class="sk-mode-note">Pick one. Grade shows letter grades only, Marks shows number fields only.</p>';
+    }
+
+    // One subject row: name + board code + tag on its own line, then a
+    // single input — a grade select in Grade mode, a marks field in
+    // Marks mode. The other method stays hidden, so the form never shows
+    // two boxes per subject.
+    function inputHtml(subject, idSuffix) {
+      var saved = values[subject.name] || { grade: '', marks: '' };
+      var max = cfg.marksMax(subject);
+      var ids = idSuffix ? ' id="' + cfg.rootId + idSuffix + '-grade"' : '';
+      var idm = idSuffix ? ' id="' + cfg.rootId + idSuffix + '-marks"' : '';
+      if (mode === 'marks') {
+        return '<span class="sk-mini"><span class="sk-mini-label">Marks (out of ' + max + ')</span>' +
+          '<input type="number" class="sk-marks"' + idm + ' min="0" max="' + max + '" placeholder="Marks 0-' + max +
+          '" aria-label="' + esc(subject.name) + ' marks" value="' + esc(saved.marks || '') + '"></span>';
+      }
+      return '<span class="sk-mini"><span class="sk-mini-label">Grade</span>' +
+        '<select class="sk-grade"' + ids + ' aria-label="' + esc(subject.name) + ' grade">' +
+        gradeOptions(BD5_GRADES, saved.grade || '') + '</select></span>';
+    }
+
+    function rowHtml(kind, index, subject, pickerOptions, tag) {
+      var head;
       if (kind === 'picker') {
-        label = '<select class="sk-subject" data-picker="' + index + '" aria-label="Subject">' +
+        head = '<select class="sk-subject" data-picker="' + index + '" aria-label="Subject">' +
           pickerOptions.map(function (s) {
-            return '<option' + (s === subject ? ' selected' : '') + '>' + esc(s) + '</option>';
-          }).join('') + '</select>';
+            return '<option value="' + esc(s.name) + '"' + (s.name === subject.name ? ' selected' : '') + '>' +
+              esc(s.name) + (s.code ? ' (' + esc(s.code) + ')' : '') + '</option>';
+          }).join('') + '</select>' +
+          (tag ? ' <span class="sk-tag">' + esc(tag) + '</span>' : '');
       } else {
-        label = '<span class="sk-subject-name">' + esc(subject) + '</span>';
+        head = '<span class="sk-subject-name">' + esc(subject.name) + '</span>' +
+          (subject.code ? ' <span class="sk-code">' + esc(subject.code) + '</span>' : '') +
+          (tag ? ' <span class="sk-tag">' + esc(tag) + '</span>' : '');
       }
       var max = cfg.marksMax(subject);
-      return '<div class="sk-row" data-subject="' + esc(subject) + '">' + label +
-        '<div class="sk-inputs">' +
-        '<span class="sk-mini"><span class="sk-mini-label">Grade</span>' +
-        '<select class="sk-grade" aria-label="' + esc(subject) + ' grade">' + gradeOptions(BD5_GRADES) + '</select></span>' +
-        '<span class="sk-or">or</span>' +
-        '<span class="sk-mini"><span class="sk-mini-label">Marks</span>' +
-        '<input type="number" class="sk-marks" min="0" max="' + max + '" placeholder="Marks 0-' + max +
-        '" aria-label="' + esc(subject) + ' marks"></span>' +
-        '</div></div>';
+      return '<div class="sk-row" data-subject="' + esc(subject.name) + '" data-max="' + max + '">' +
+        '<div class="sk-subject-line">' + head + '</div>' +
+        '<div class="sk-inputs">' + inputHtml(subject) + '</div></div>';
     }
 
     function pickerValues() {
       return Array.prototype.slice.call(subjectsEl.querySelectorAll('[data-picker]'))
         .map(function (sel) { return sel.value; });
+    }
+
+    function pickerDefault(p, i) {
+      if (p.def) return p.def;
+      return (p.options[i] || p.options[0]).name;
+    }
+
+    // Remember what is on screen before a rebuild, so switching the
+    // input method never wipes an entered grade, marks or subject choice.
+    function saveState() {
+      subjectsEl.querySelectorAll('[data-picker]').forEach(function (sel) {
+        pickerSel[Number(sel.getAttribute('data-picker'))] = sel.value;
+      });
+      subjectsEl.querySelectorAll('.sk-row').forEach(function (row) {
+        var name = row.getAttribute('data-subject');
+        var gradeEl = row.querySelector('.sk-grade');
+        var marksEl = row.querySelector('.sk-marks');
+        var prev = values[name] || { grade: '', marks: '' };
+        values[name] = {
+          grade: gradeEl ? gradeEl.value : prev.grade,
+          marks: marksEl ? marksEl.value : prev.marks
+        };
+      });
+      var fourthRow = fourthInputsEl.querySelector('.sk-row');
+      if (fourthRow) {
+        var fname = fourthRow.getAttribute('data-subject');
+        var fgradeEl = fourthRow.querySelector('.sk-grade');
+        var fmarksEl = fourthRow.querySelector('.sk-marks');
+        var fprev = values[fname] || { grade: '', marks: '' };
+        values[fname] = {
+          grade: fgradeEl ? fgradeEl.value : fprev.grade,
+          marks: fmarksEl ? fmarksEl.value : fprev.marks
+        };
+      }
     }
 
     // Rebuild picker options so no subject can be chosen twice.
@@ -200,9 +278,10 @@
         var options = group().pickers[idx].options;
         var current = sel.value;
         sel.innerHTML = options
-          .filter(function (s) { return s === current || chosen.indexOf(s) === -1; })
+          .filter(function (s) { return s.name === current || chosen.indexOf(s.name) === -1; })
           .map(function (s) {
-            return '<option' + (s === current ? ' selected' : '') + '>' + esc(s) + '</option>';
+            return '<option value="' + esc(s.name) + '"' + (s.name === current ? ' selected' : '') + '>' +
+              esc(s.name) + (s.code ? ' (' + esc(s.code) + ')' : '') + '</option>';
           }).join('');
         sel.closest('.sk-row').setAttribute('data-subject', current);
       });
@@ -214,8 +293,9 @@
       if (g.fourthFromPickers) {
         var chosen = pickerValues();
         g.pickers.forEach(function (p) {
+          if (p.fourth === false) return;
           p.options.forEach(function (s) {
-            if (chosen.indexOf(s) === -1 && opts.indexOf(s) === -1) opts.push(s);
+            if (chosen.indexOf(s.name) === -1 && opts.every(function (o) { return o.name !== s.name; })) opts.push(s);
           });
         });
       }
@@ -228,9 +308,10 @@
       var current = fourthEl.value;
       fourthEl.innerHTML = '<option value="">No 4th subject</option>' +
         fourthOptions().map(function (s) {
-          return '<option' + (s === current ? ' selected' : '') + '>' + esc(s) + '</option>';
+          return '<option value="' + esc(s.name) + '"' + (s.name === current ? ' selected' : '') + '>' +
+            esc(s.name) + (s.code ? ' (' + esc(s.code) + ')' : '') + '</option>';
         }).join('');
-      if (fourthOptions().indexOf(current) === -1) fourthEl.value = '';
+      if (fourthOptions().every(function (s) { return s.name !== current; })) fourthEl.value = '';
       // Only rebuild the 4th-subject inputs when the subject actually
       // changed — otherwise a core-subject edit would wipe the 4th grade.
       if (fourthEl.value !== lastFourth) {
@@ -241,58 +322,68 @@
 
     function renderFourthInputs() {
       if (!fourthEl.value) { fourthInputsEl.innerHTML = ''; return; }
-      var subject = fourthEl.value;
+      var subject = fourthOptions().filter(function (s) { return s.name === fourthEl.value; })[0];
+      if (!subject) { fourthInputsEl.innerHTML = ''; return; }
       var max = cfg.marksMax(subject);
       fourthInputsEl.innerHTML =
-        '<div class="sk-row" data-subject="' + esc(subject) + '">' +
-        '<span class="sk-subject-name">' + esc(subject) + '</span>' +
-        '<div class="sk-inputs">' +
-        '<span class="sk-mini"><span class="sk-mini-label">Grade</span>' +
-        '<select class="sk-grade" id="' + cfg.rootId + '-opt-grade" aria-label="' + esc(subject) + ' grade">' +
-        gradeOptions(BD5_GRADES) + '</select></span>' +
-        '<span class="sk-or">or</span>' +
-        '<span class="sk-mini"><span class="sk-mini-label">Marks</span>' +
-        '<input type="number" class="sk-marks" id="' + cfg.rootId + '-opt-marks" min="0" max="' + max +
-        '" placeholder="Marks 0-' + max + '" aria-label="' + esc(subject) + ' marks"></span>' +
-        '</div></div>';
+        '<div class="sk-row" data-subject="' + esc(subject.name) + '" data-max="' + max + '">' +
+        '<div class="sk-subject-line"><span class="sk-subject-name">' + esc(subject.name) + '</span>' +
+        (subject.code ? ' <span class="sk-code">' + esc(subject.code) + '</span>' : '') +
+        ' <span class="sk-tag">Optional (4th subject)</span></div>' +
+        '<div class="sk-inputs">' + inputHtml(subject, '-opt') + '</div></div>';
       wireRow(fourthInputsEl.querySelector('.sk-row'));
     }
 
-    // Grade and marks are alternatives: filling one clears the other.
     function wireRow(row) {
       var sel = row.querySelector('.sk-grade');
       var inp = row.querySelector('.sk-marks');
-      sel.addEventListener('change', function () { if (sel.value !== '') inp.value = ''; });
-      inp.addEventListener('input', function () { if (inp.value !== '') sel.value = ''; });
+      var name = row.getAttribute('data-subject');
+      function save() {
+        var prev = values[name] || { grade: '', marks: '' };
+        values[name] = {
+          grade: sel ? sel.value : prev.grade,
+          marks: inp ? inp.value : prev.marks
+        };
+      }
+      if (sel) sel.addEventListener('change', save);
+      if (inp) inp.addEventListener('input', save);
     }
 
-    function render() {
+    function renderRows() {
       var g = group();
       var html = '';
-      g.fixed.forEach(function (name) { html += rowHtml('fixed', 0, name); });
+      g.fixed.forEach(function (s) { html += rowHtml('fixed', 0, s, null, s.tag); });
       (g.pickers || []).forEach(function (p, i) {
-        html += rowHtml('picker', i, p.options[i] || p.options[0], p.options);
+        var current = pickerSel[i] || pickerDefault(p, i);
+        var subject = p.options.filter(function (s) { return s.name === current; })[0] || p.options[0];
+        html += rowHtml('picker', i, subject, p.options, p.tag);
       });
       subjectsEl.innerHTML = html;
       subjectsEl.querySelectorAll('.sk-row').forEach(wireRow);
       refreshPickers();
-      // A fresh form (group change or Reset) starts with no 4th subject.
-      fourthEl.value = '';
-      lastFourth = '';
+    }
+
+    function render(resetForm) {
+      renderRows();
+      if (resetForm) {
+        fourthEl.value = '';
+        lastFourth = '';
+        fourthInputsEl.innerHTML = '';
+      }
       renderFourthOptions();
       resultEl.innerHTML = '';
     }
 
     // null = not entered yet. An empty field is never a grade — and never an F.
     function pointOf(row) {
-      var subject = row.getAttribute('data-subject');
       var gradeEl = row.querySelector('.sk-grade');
       var marksEl = row.querySelector('.sk-marks');
-      if (gradeEl.value !== '') return parseFloat(gradeEl.value);
-      if (marksEl.value !== '') {
+      if (gradeEl && gradeEl.value !== '') return parseFloat(gradeEl.value);
+      if (marksEl && marksEl.value !== '') {
         var marks = parseFloat(marksEl.value);
         if (isNaN(marks)) return null;
-        return marksToPoint5(marks / (cfg.marksMax(subject) / 100));
+        var max = parseFloat(row.getAttribute('data-max')) || 100;
+        return marksToPoint5(marks / (max / 100));
       }
       return null;
     }
@@ -307,7 +398,9 @@
           : '';
         return;
       }
-      var failed = points.some(function (p) { return p === 0; });
+      var failedNames = rows.filter(function (row, i) { return points[i] === 0; })
+        .map(function (row) { return row.getAttribute('data-subject'); });
+      var failed = failedNames.length > 0;
       var total = points.reduce(function (a, b) { return a + b; }, 0);
       var bonus = 0;
       if (fourthEl.value) {
@@ -317,7 +410,7 @@
       }
       var gpa = Math.min((total + bonus) / cfg.coreCount, failed ? 0 : 5);
       var status = failed
-        ? '<span class="sk-bad">Failed — an F in any core subject makes the overall GPA 0.00</span>'
+        ? '<span class="sk-bad">Failed — F in ' + failedNames.map(esc).join(', ') + '</span>'
         : (gpa >= 5 ? '<span class="sk-ok">Golden A+</span>' : '<span class="sk-ok">Passed</span>');
       showResult(resultEl, [
         '<p class="sk-result-label">Your GPA</p>',
@@ -329,13 +422,20 @@
       ]);
     }
 
-    groupEl.addEventListener('change', render);
+    groupEl.addEventListener('change', function () {
+      values = {}; pickerSel = {};
+      render(true);
+    });
     // Route through renderFourthOptions so lastFourth stays in sync;
     // calling renderFourthInputs directly would desync it and the next
     // core-subject edit would rebuild (and wipe) the 4th inputs.
     fourthEl.addEventListener('change', renderFourthOptions);
     $(cfg.calcId).addEventListener('click', function () { calculate(true); });
-    $(cfg.resetId).addEventListener('click', render);
+    $(cfg.resetId).addEventListener('click', function () {
+      values = {}; pickerSel = {}; mode = 'grade';
+      renderMode();
+      render(true);
+    });
     subjectsEl.addEventListener('input', function () { calculate(false); });
     subjectsEl.addEventListener('change', function () {
       refreshPickers();
@@ -344,9 +444,21 @@
     });
     fourthInputsEl.addEventListener('input', function () { calculate(false); });
     fourthInputsEl.addEventListener('change', function () { calculate(false); });
-    render();
+    if (modeEl) {
+      modeEl.addEventListener('click', function (event) {
+        var button = event.target.closest ? event.target.closest('[data-mode]') : null;
+        if (!button || button.getAttribute('data-mode') === mode) return;
+        saveState();
+        mode = button.getAttribute('data-mode');
+        renderMode();
+        renderRows();
+        renderFourthInputs();
+        calculate(false);
+      });
+    }
+    renderMode();
+    render(true);
   }
-
   /* ---------- CGPA tool ----------
    * UGC 4.00 scale. Each course takes a letter grade OR a marks percentage.
    * Semester GPA = Σ(credit × grade point) / Σcredits.

@@ -201,6 +201,22 @@ p.tool-section { margin: 26px 0 6px; font-size: 18px; }
    left the two boxes unlabeled and wrapped raggedly on phones. */
 .sk-row { display: grid; gap: 6px; margin-bottom: 14px; }
 .sk-subject-name { font-weight: 600; }
+/* Subject line: name + board code badge + Compulsory/Group/Optional tag. */
+.sk-subject-line { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 8px; }
+.sk-code {
+  display: inline-block; font-size: 13px; font-weight: 700;
+  color: var(--accent-ink); background: var(--accent-soft);
+  border-radius: 4px; padding: 1px 7px;
+}
+.sk-tag {
+  display: inline-block; font-size: 12px; font-weight: 700;
+  letter-spacing: 0.04em; text-transform: uppercase; color: var(--muted);
+}
+/* Input-method toggle above the subject rows: one segmented control,
+   same pattern as the IELTS module toggle. */
+.sk-mode { margin: 18px 0 4px; }
+.sk-mode .sk-mini-label { margin-bottom: 6px; }
+.sk-mode-note { font-size: 14px; color: var(--muted); margin: 8px 0 0; }
 .sk-inputs { display: flex; gap: 10px; align-items: end; flex-wrap: wrap; }
 .sk-mini { flex: 1 1 140px; }
 .sk-mini-label { display: block; font-size: 13px; font-weight: 600; color: var(--muted); margin-bottom: 4px; }
