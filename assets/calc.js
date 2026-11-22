@@ -206,8 +206,7 @@
         '<div class="sk-segmented" role="group" aria-label="Input method">' +
         '<button type="button" data-mode="grade" aria-pressed="' + (mode === 'grade') + '">Grade</button>' +
         '<button type="button" data-mode="marks" aria-pressed="' + (mode === 'marks') + '">Marks</button>' +
-        '</div>' +
-        '<p class="sk-mode-note">Pick one. Grade shows letter grades only, Marks shows number fields only.</p>';
+        '</div>';
     }
 
     // One subject row: name + board code + tag on its own line, then a

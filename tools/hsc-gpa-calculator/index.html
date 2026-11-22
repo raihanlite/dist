@@ -25,7 +25,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@600;700&display=swap" rel="stylesheet" />
-<link rel="stylesheet" href="/assets/style.css?v=16" />
+<link rel="stylesheet" href="/assets/style.css?v=17" />
 <link rel="icon" type="image/png" href="/assets/favicon-96x96.png" sizes="96x96" />
 <link rel="shortcut icon" href="/assets/favicon.ico" />
 <link rel="apple-touch-icon" href="/assets/apple-touch-icon.png" />
@@ -53,8 +53,6 @@
 </header>
 <main class="wrap">
 <h1>HSC GPA Calculator for All Education Boards in Bangladesh</h1>
-<p>Calculate your HSC GPA online. Pick Grade or Marks, then fill in each subject. This free HSC GPA Calculator supports <strong>Science, Business Studies, and Humanities</strong> students in Bangladesh and automatically applies the applicable <strong>4th-subject bonus</strong>. Every subject shows its official board code, the code printed on your marksheet and admit card. See how your HSC GPA translates abroad in the <a href="/admissions/gpa-conversion/">GPA conversion guide</a>.</p>
-<p>বাংলাদেশের যেকোনো সাধারণ শিক্ষা বোর্ডের অধীনে এইচএসসি দিলে এই ক্যালকুলেটর দিয়ে তোমার জিপিএ বের করতে পারবে। উপরে গ্রেড না নম্বর, একটা বেছে নাও। প্রতিটি বিষয়ের পাশে বোর্ডের কোড দেওয়া আছে, মার্কশিটে যেটা থাকে। ছয়টি মূল বিষয়ের গ্রেড পয়েন্ট আর ৪র্থ বিষয়ের বোনাস যোগ করে ৬ দিয়ে ভাগ করা হয়, আর সর্বোচ্চ জিপিএ ৫.০০।</p>
 <div id="hsc-tool">
 <div>
 <span class="sk-mini-label">Group</span>
@@ -62,15 +60,15 @@
 </div>
 <div id="hsc-mode" class="sk-mode"></div>
 <p class="tool-section"><strong>Main subjects (6)</strong></p>
-<p>Compulsory subjects are fixed. Subjects with a drop-down are yours to match to your marksheet. The code beside each subject is its board code.</p>
 <div id="hsc-subjects"></div>
 <p class="tool-section"><strong>Optional subject (4th subject bonus)</strong></p>
-<label for="hsc-optional">Optional subject</label>
-<select id="hsc-optional"></select>
+<select id="hsc-optional" aria-label="Optional subject" class="sk-wide"></select>
 <div id="hsc-optional-inputs"></div>
-<p><button type="button" id="hsc-calc">Calculate GPA</button> <button type="button" id="hsc-reset" class="sk-secondary">Reset</button></p>
+<p class="sk-actions"><button type="button" id="hsc-calc">Calculate GPA</button> <button type="button" id="hsc-reset" class="sk-secondary">Reset</button></p>
 <div id="hsc-result" class="result" aria-live="polite"></div>
 </div>
+<p>Calculate your HSC GPA online. Pick Grade or Marks, then fill in each subject. This free HSC GPA Calculator supports <strong>Science, Business Studies, and Humanities</strong> students in Bangladesh and automatically applies the applicable <strong>4th-subject bonus</strong>. Every subject shows its official board code, the code printed on your marksheet and admit card. See how your HSC GPA translates abroad in the <a href="/admissions/gpa-conversion/">GPA conversion guide</a>.</p>
+<p>বাংলাদেশের যেকোনো সাধারণ শিক্ষা বোর্ডের অধীনে এইচএসসি দিলে এই ক্যালকুলেটর দিয়ে তোমার জিপিএ বের করতে পারবে। উপরে গ্রেড না নম্বর, একটা বেছে নাও। প্রতিটি বিষয়ের পাশে বোর্ডের কোড দেওয়া আছে, মার্কশিটে যেটা থাকে। ছয়টি মূল বিষয়ের গ্রেড পয়েন্ট আর ৪র্থ বিষয়ের বোনাস যোগ করে ৬ দিয়ে ভাগ করা হয়, আর সর্বোচ্চ জিপিএ ৫.০০।</p>
 <script src="/assets/calc.js"></script>
 <script>
 Calc.gpaTool({

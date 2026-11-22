@@ -25,7 +25,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@600;700&display=swap" rel="stylesheet" />
-<link rel="stylesheet" href="/assets/style.css?v=16" />
+<link rel="stylesheet" href="/assets/style.css?v=17" />
 <link rel="icon" type="image/png" href="/assets/favicon-96x96.png" sizes="96x96" />
 <link rel="shortcut icon" href="/assets/favicon.ico" />
 <link rel="apple-touch-icon" href="/assets/apple-touch-icon.png" />
@@ -53,8 +53,6 @@
 </header>
 <main class="wrap">
 <h1>SSC GPA Calculator for All Education Boards in Bangladesh</h1>
-<p>Calculate your SSC GPA for Science, Commerce, and Arts across all Bangladesh education boards, using the board's own formula, including the 4th-subject bonus. Pick Grade or Marks, then fill in each subject. Every subject shows its official board code, the code printed on your marksheet and admit card. See how your SSC GPA translates abroad in the <a href="/admissions/gpa-conversion/">GPA conversion guide</a>.</p>
-<p>বাংলাদেশের যেকোনো সাধারণ শিক্ষা বোর্ডের অধীনে এসএসসি দিলে এই ক্যালকুলেটর দিয়ে তোমার জিপিএ বের করতে পারবে। উপরে গ্রেড না নম্বর, একটা বেছে নাও। প্রতিটি বিষয়ের পাশে বোর্ডের কোড দেওয়া আছে, মার্কশিটে যেটা থাকে। নয়টি মূল বিষয়ের গ্রেড পয়েন্ট আর ৪র্থ বিষয়ের বোনাস যোগ করে ৯ দিয়ে ভাগ করা হয়, আর সর্বোচ্চ জিপিএ ৫.০০।</p>
 <div id="ssc-tool">
 <div>
 <span class="sk-mini-label">Group</span>
@@ -62,16 +60,15 @@
 </div>
 <div id="ssc-mode" class="sk-mode"></div>
 <p class="tool-section"><strong>Core subjects (9)</strong></p>
-<p>Compulsory subjects are fixed. Subjects with a drop-down are yours to match to your marksheet. The code beside each subject is its board code.</p>
 <div id="ssc-subjects"></div>
 <p class="tool-section"><strong>4th subject (bonus)</strong></p>
-<p>Only the grade points above C (2.00) in your 4th subject are added as a bonus. A low grade there never lowers your GPA.</p>
-<label for="ssc-fourth">4th subject</label>
-<select id="ssc-fourth"></select>
+<select id="ssc-fourth" aria-label="4th subject" class="sk-wide"></select>
 <div id="ssc-fourth-inputs"></div>
-<p><button type="button" id="ssc-calc">Calculate GPA</button> <button type="button" id="ssc-reset" class="sk-secondary">Reset</button></p>
+<p class="sk-actions"><button type="button" id="ssc-calc">Calculate GPA</button> <button type="button" id="ssc-reset" class="sk-secondary">Reset</button></p>
 <div id="ssc-result" class="result" aria-live="polite"></div>
 </div>
+<p>Calculate your SSC GPA for Science, Commerce, and Arts across all Bangladesh education boards, using the board's own formula, including the 4th-subject bonus. Pick Grade or Marks, then fill in each subject. Every subject shows its official board code, the code printed on your marksheet and admit card. See how your SSC GPA translates abroad in the <a href="/admissions/gpa-conversion/">GPA conversion guide</a>.</p>
+<p>বাংলাদেশের যেকোনো সাধারণ শিক্ষা বোর্ডের অধীনে এসএসসি দিলে এই ক্যালকুলেটর দিয়ে তোমার জিপিএ বের করতে পারবে। উপরে গ্রেড না নম্বর, একটা বেছে নাও। প্রতিটি বিষয়ের পাশে বোর্ডের কোড দেওয়া আছে, মার্কশিটে যেটা থাকে। নয়টি মূল বিষয়ের গ্রেড পয়েন্ট আর ৪র্থ বিষয়ের বোনাস যোগ করে ৯ দিয়ে ভাগ করা হয়, আর সর্বোচ্চ জিপিএ ৫.০০।</p>
 <script src="/assets/calc.js"></script>
 <script>
 Calc.gpaTool({
