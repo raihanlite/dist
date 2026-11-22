@@ -163,6 +163,12 @@
    * from the marksheet, and a Compulsory / Group / Optional tag, so the
    * difference between counted subjects and the 4th subject is visible.
    * The result updates live once every core row is filled.
+   * Layout is table-style: on desktop each row is one line — Code |
+   * Subject | Grade or Marks — under a header row, with the 4th subject
+   * under its own divider band. On phones the rows stack: code badge
+   * beside the subject name, input below. The group is picked with big
+   * tabs (Science / Business Studies / Humanities, or Science /
+   * Commerce / Arts), not a drop-down, so all groups are visible.
    */
   function gpaTool(cfg) {
     var root = $(cfg.rootId);
@@ -176,10 +182,22 @@
     // What the tool calls its counted subjects (SSC: "core subject", HSC: "main subject").
     var subjectWord = cfg.subjectWord || 'core subject';
     var mode = 'grade'; // 'grade' | 'marks'
+    var currentGroup = Object.keys(cfg.groups)[0]; // first group key is the default
     var values = {}; // subject name -> { grade: '', marks: '' }
     var pickerSel = {}; // picker index -> chosen subject name
 
-    function group() { return cfg.groups[groupEl.value]; }
+    function group() { return cfg.groups[currentGroup]; }
+
+    // Group tabs: one button per group, all visible at once, pressed state
+    // on the current group. Labels come from cfg.groupLabels.
+    function renderGroup() {
+      var keys = Object.keys(cfg.groups);
+      groupEl.innerHTML = keys.map(function (key) {
+        var label = (cfg.groupLabels && cfg.groupLabels[key]) || key;
+        return '<button type="button" data-group="' + esc(key) + '" aria-pressed="' +
+          (key === currentGroup) + '">' + esc(label) + '</button>';
+      }).join('');
+    }
 
     function renderMode() {
       if (!modeEl) return;
@@ -211,6 +229,11 @@
         gradeOptions(BD5_GRADES, saved.grade || '') + '</select></span>';
     }
 
+    // One subject row, table-style: the board code in its own column,
+    // then the subject name (or picker) with its tag, then a single input.
+    // CSS puts the three on one line at desktop width and stacks them on
+    // phones. Picker rows show the current choice's code in the code
+    // column; refreshPickers keeps it in sync when the choice changes.
     function rowHtml(kind, index, subject, pickerOptions, tag) {
       var head;
       if (kind === 'picker') {
@@ -222,11 +245,11 @@
           (tag ? ' <span class="sk-tag">' + esc(tag) + '</span>' : '');
       } else {
         head = '<span class="sk-subject-name">' + esc(subject.name) + '</span>' +
-          (subject.code ? ' <span class="sk-code">' + esc(subject.code) + '</span>' : '') +
           (tag ? ' <span class="sk-tag">' + esc(tag) + '</span>' : '');
       }
       var max = cfg.marksMax(subject);
       return '<div class="sk-row" data-subject="' + esc(subject.name) + '" data-max="' + max + '">' +
+        '<span class="sk-code">' + esc(subject.code || '') + '</span>' +
         '<div class="sk-subject-line">' + head + '</div>' +
         '<div class="sk-inputs">' + inputHtml(subject) + '</div></div>';
     }
@@ -284,6 +307,15 @@
               esc(s.name) + (s.code ? ' (' + esc(s.code) + ')' : '') + '</option>';
           }).join('');
         sel.closest('.sk-row').setAttribute('data-subject', current);
+        var row = sel.closest('.sk-row');
+        var codeEl = row.querySelector('.sk-code');
+        var currentSubject = options.filter(function (s) { return s.name === current; })[0];
+        if (codeEl && currentSubject) codeEl.textContent = currentSubject.code || '';
+        if (currentSubject) {
+          row.setAttribute('data-max', cfg.marksMax(currentSubject));
+          var marksEl = row.querySelector('.sk-marks');
+          if (marksEl) marksEl.setAttribute('max', cfg.marksMax(currentSubject));
+        }
       });
     }
 
@@ -326,9 +358,10 @@
       if (!subject) { fourthInputsEl.innerHTML = ''; return; }
       var max = cfg.marksMax(subject);
       fourthInputsEl.innerHTML =
+        '<div class="sk-fourth-band">4th subject (optional)</div>' +
         '<div class="sk-row" data-subject="' + esc(subject.name) + '" data-max="' + max + '">' +
+        '<span class="sk-code">' + esc(subject.code || '') + '</span>' +
         '<div class="sk-subject-line"><span class="sk-subject-name">' + esc(subject.name) + '</span>' +
-        (subject.code ? ' <span class="sk-code">' + esc(subject.code) + '</span>' : '') +
         ' <span class="sk-tag">Optional (4th subject)</span></div>' +
         '<div class="sk-inputs">' + inputHtml(subject, '-opt') + '</div></div>';
       wireRow(fourthInputsEl.querySelector('.sk-row'));
@@ -351,7 +384,8 @@
 
     function renderRows() {
       var g = group();
-      var html = '';
+      var html = '<div class="sk-table-head" aria-hidden="true"><span>Code</span><span>Subject</span><span>' +
+        (mode === 'marks' ? 'Marks' : 'Grade') + '</span></div>';
       g.fixed.forEach(function (s) { html += rowHtml('fixed', 0, s, null, s.tag); });
       (g.pickers || []).forEach(function (p, i) {
         var current = pickerSel[i] || pickerDefault(p, i);
@@ -422,8 +456,12 @@
       ]);
     }
 
-    groupEl.addEventListener('change', function () {
+    groupEl.addEventListener('click', function (event) {
+      var button = event.target.closest ? event.target.closest('[data-group]') : null;
+      if (!button || button.getAttribute('data-group') === currentGroup) return;
+      currentGroup = button.getAttribute('data-group');
       values = {}; pickerSel = {};
+      renderGroup();
       render(true);
     });
     // Route through renderFourthOptions so lastFourth stays in sync;
@@ -456,6 +494,7 @@
         calculate(false);
       });
     }
+    renderGroup();
     renderMode();
     render(true);
   }
