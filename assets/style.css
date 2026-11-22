@@ -231,9 +231,11 @@ p.tool-section { margin: 26px 0 6px; font-size: 18px; }
   .sk-row .sk-mini-label { display: none; }
 }
 .sk-subject-name { font-weight: 600; }
-/* Subject line: name + board code badge + Compulsory/Group/Optional tag. */
-.sk-subject-line { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 8px; flex: 1 1 auto; min-width: 0; }
-.sk-subject-line .sk-subject { flex: 1 1 auto; min-width: 0; }
+/* Subject line: name on top, tag underneath, so a long name never pushes
+   its tag onto a ragged second line in some rows and not others. The
+   picker select fills the column width. */
+.sk-subject-line { display: flex; flex-direction: column; align-items: flex-start; gap: 2px; flex: 1 1 auto; min-width: 0; }
+.sk-subject-line .sk-subject { width: 100%; }
 .sk-code {
   display: inline-block; font-size: 13px; font-weight: 700;
   color: var(--accent-ink); background: var(--accent-soft);
